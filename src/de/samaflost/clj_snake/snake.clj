@@ -27,4 +27,7 @@
                              (if (> to-grow 0) body (butlast body)))
           :to-grow (if (> to-grow 1) (dec to-grow) 0))))
 
+(defn change-direction [snake new-dir]
+  ^{:doc "changes the direction of the snake to new-dir"}
+  (assoc snake :direction new-dir))
 
