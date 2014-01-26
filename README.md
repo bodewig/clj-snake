@@ -15,12 +15,16 @@ missed badly by a person close to me.
 
 So beyond the simple Snake game it should provide
 
+* apples can rot
+* an exit opens once all apples have been consumed, the game is only
+  won once the player's snake leaves the board via this exit
+* new apples are added when all apples have been eaten and time runs
+  out
 * a second game-controlled snake with some limited AI that tries to
   steal apples and even hit the player's snake
 * a ball bouncing around, getting hit by it is deadly for the player's
   snake
-* an exit opens once all apples have been consumed, the game is only
-  won once the player's snake leaves the board via this exit
 * walls inside the board that need to be run around
 * several levels
+
 
