@@ -38,3 +38,11 @@
   ^{:doc "grows the snake as it eats an apple"}
   (assoc snake :to-grow
          (+ (:to-grow snake) (/ (:remaining-nutrition apple) 25))))
+
+(defn out-of-bounds? [snake-head]
+  (let [x (first snake-head) y (second snake-head)]
+    (or (< x 0) (> x (:width board-size))
+        (< y 0) (> y (:height board-size)))))
+
+(defn hits-tail? [snake-head snake]
+  (contains? (set (next (:body snake))) snake-head))

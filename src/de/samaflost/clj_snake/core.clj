@@ -1,5 +1,5 @@
 (ns de.samaflost.clj-snake.core
-  (:import (javax.swing JPanel JFrame Timer)
+  (:import (javax.swing JPanel JFrame Timer JOptionPane)
            (java.awt Dimension)
            (java.awt.event ActionListener KeyListener KeyEvent))
   (:use [de.samaflost.clj-snake apple config snake painting])
@@ -22,6 +22,11 @@
 (defn- apple-at-head [snake apples]
   (let [head (first (:body @snake))]
     (some #(when (= (:location %) head) %) @apples)))
+
+(defn- is-lost? [snake]
+  (let [head (first (:body @snake))]
+    (or (out-of-bounds? head)
+        (hits-tail? head @snake))))
 
 (defn- one-turn [snake apples]
   (dosync
@@ -59,7 +64,9 @@
                       (proxy [ActionListener] []
                         (actionPerformed [event]
                           (one-turn snake apples)
-                          (.repaint panel))))]
+                          (if (is-lost? snake)
+                            (JOptionPane/showMessageDialog frame "Game Over!")
+                            (.repaint panel)))))]
     (doto frame
       (.add panel)
       (.pack)
