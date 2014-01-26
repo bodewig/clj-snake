@@ -29,6 +29,7 @@
      (when eaten-apple
        (alter snake consume eaten-apple)
        (alter apples remove-apple eaten-apple))
+     (alter apples age)
      (alter snake move))))
 
 (defn- create-panel [snake apples]

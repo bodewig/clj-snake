@@ -36,4 +36,5 @@
 
 (defn consume [snake apple]
   ^{:doc "grows the snake as it eats an apple"}
-  (assoc snake :to-grow (+ (:to-grow snake) 5)))
+  (assoc snake :to-grow
+         (+ (:to-grow snake) (/ (:remaining-nutrition apple) 25))))
