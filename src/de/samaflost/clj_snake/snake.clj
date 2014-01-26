@@ -1,4 +1,5 @@
 (ns de.samaflost.clj-snake.snake
+  (:import (java.awt Color))
   (:use [de.samaflost.clj-snake.config :only [board-size]]))
 
 (def dirs
@@ -17,6 +18,8 @@
                 (if player? (:height board-size) 0)])
    :direction (if player? :up :down)
    :to-grow 0
+   :color (if player? Color/GREEN Color/BLUE)
+   :type :snake
    })
 
 (defn move [snake]

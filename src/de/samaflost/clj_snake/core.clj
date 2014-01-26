@@ -1,9 +1,8 @@
 (ns de.samaflost.clj-snake.core
   (:import (javax.swing JPanel JFrame Timer)
-           (java.awt Color Dimension)
+           (java.awt Dimension)
            (java.awt.event ActionListener KeyListener KeyEvent))
-  (:use [de.samaflost.clj-snake.config]
-        [de.samaflost.clj-snake.snake])
+  (:use [de.samaflost.clj-snake apple config snake painting])
   (:gen-class))
 
 
@@ -24,27 +23,22 @@
   (dosync
    (alter snake move)))
 
-(defn- paint [g snake]
-  (doseq [pt (:body snake)]
-    (.setColor g Color/GREEN)
-    (.fillRect g
-               (* (first pt) pixel-per-point)
-               (* (second pt) pixel-per-point)
-               pixel-per-point pixel-per-point)))
-
-(defn- create-panel [snake]
+(defn- create-panel [snake apples]
   (proxy [JPanel] []
     (getPreferredSize []
       (Dimension. (* (:width board-size) pixel-per-point)
                   (* (:height board-size)  pixel-per-point)))
     (paintComponent [g]
       (proxy-super paintComponent g)
-      (paint g @snake))))
+      (paint g @snake)
+      (doseq [a @apples]
+        (paint g a)))))
 
 (defn- create-board []
   (let [snake (ref (new-snake true))
+        apples (ref (initial-apples))
         frame (JFrame. "clj-snake")
-        panel (doto (create-panel snake)
+        panel (doto (create-panel snake apples)
                 (.setFocusable true)
                 (.addKeyListener
                  (proxy [KeyListener] []
@@ -52,7 +46,7 @@
                      (change-snake-direction snake (.getKeyCode e)))
                    (keyReleased [e])
                    (keyTyped [e]))))
-        timer (Timer. ms-per-turn
+        turn-timer (Timer. ms-per-turn
                       (proxy [ActionListener] []
                         (actionPerformed [event]
                           (one-turn snake)
@@ -61,7 +55,7 @@
       (.add panel)
       (.pack)
       (.setVisible true))
-    (.start timer)))
+    (.start turn-timer)))
 
 (defn -main
   [& args]
