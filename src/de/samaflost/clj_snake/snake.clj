@@ -17,7 +17,7 @@
    :body (list [(/ (:width board-size) 2)
                 (if player? (:height board-size) 0)])
    :direction (if player? :up :down)
-   :to-grow 0
+   :to-grow 4
    :color (if player? Color/GREEN Color/BLUE)
    :type :snake
    })
