@@ -34,3 +34,6 @@
   ^{:doc "changes the direction of the snake to new-dir"}
   (assoc snake :direction new-dir))
 
+(defn consume [snake apple]
+  ^{:doc "grows the snake as it eats an apple"}
+  (assoc snake :to-grow (+ (:to-grow snake) 5)))

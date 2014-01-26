@@ -19,9 +19,17 @@
   (let [new-dir (get key-code-to-direction key-code)]
     (when new-dir (dosync (alter snake change-direction new-dir)))))
 
-(defn- one-turn [snake]
+(defn- apple-at-head [snake apples]
+  (let [head (first (:body @snake))]
+    (some #(when (= (:location %) head) %) @apples)))
+
+(defn- one-turn [snake apples]
   (dosync
-   (alter snake move)))
+   (let [eaten-apple (apple-at-head snake apples)]
+     (when eaten-apple
+       (alter snake consume eaten-apple)
+       (alter apples remove-apple eaten-apple))
+     (alter snake move))))
 
 (defn- create-panel [snake apples]
   (proxy [JPanel] []
@@ -49,7 +57,7 @@
         turn-timer (Timer. ms-per-turn
                       (proxy [ActionListener] []
                         (actionPerformed [event]
-                          (one-turn snake)
+                          (one-turn snake apples)
                           (.repaint panel))))]
     (doto frame
       (.add panel)

@@ -13,3 +13,5 @@
   ^{:doc "creates the initial set of apples"}
   (vec (repeatedly number-of-apples random-apple)))
 
+(defn remove-apple [apples eaten]
+  (vec (remove #(= % eaten) apples)))
