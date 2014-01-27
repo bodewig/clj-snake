@@ -1,23 +1,8 @@
 (ns de.samaflost.clj-snake.core
-  (:import (javax.swing JPanel JFrame Timer JOptionPane)
-           (java.awt Dimension)
-           (java.awt.event ActionListener KeyListener KeyEvent))
-  (:use [de.samaflost.clj-snake apple config level snake painting])
+  (:import (javax.swing JOptionPane)
+           (java.awt.event ActionListener))
+  (:use [de.samaflost.clj-snake apple config level snake ui])
   (:gen-class))
-
-
-(def key-code-to-direction
-  ^{:private true}
-  {
-   KeyEvent/VK_LEFT :left
-   KeyEvent/VK_RIGHT :right
-   KeyEvent/VK_UP :up
-   KeyEvent/VK_DOWN :down
-   })
-
-(defn- change-snake-direction [snake key-code]
-  (let [new-dir (get key-code-to-direction key-code)]
-    (when new-dir (dosync (alter snake change-direction new-dir)))))
 
 (defn- apple-at-head [snake apples]
   (let [head (first (:body snake))]
@@ -47,32 +32,12 @@
      (alter apples age)
      (alter snake move))))
 
-(defn- create-panel [level snake apples]
-  (proxy [JPanel] []
-    (getPreferredSize []
-      (Dimension. (* (:width board-size) pixel-per-point)
-                  (* (:height board-size)  pixel-per-point)))
-    (paintComponent [g]
-      (proxy-super paintComponent g)
-      (paint g @level)
-      (paint g @snake)
-      (doseq [a @apples]
-        (paint g a)))))
 
 (defn- create-board []
   (let [snake (ref (new-snake true))
         level (ref (create-level))
         apples (ref (initial-apples level))
-        frame (JFrame. "clj-snake")
-        panel (doto (create-panel level snake apples)
-                (.setFocusable true)
-                (.addKeyListener
-                 (proxy [KeyListener] []
-                   (keyPressed [e]
-                     (change-snake-direction snake (.getKeyCode e)))
-                   (keyReleased [e])
-                   (keyTyped [e]))))
-        turn-timer (Timer. ms-per-turn
+        turn-action (fn [frame panel]
                       (proxy [ActionListener] []
                         (actionPerformed [event]
                           (one-turn snake apples)
@@ -82,11 +47,7 @@
                           (if (is-lost? @snake @level)
                             (JOptionPane/showMessageDialog frame "Game Over!")
                             (.repaint panel)))))]
-    (doto frame
-      (.add panel)
-      (.pack)
-      (.setVisible true))
-    (.start turn-timer)))
+    (create-ui turn-action level snake apples)))
 
 (defn -main
   [& args]
