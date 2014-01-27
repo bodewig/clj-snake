@@ -22,13 +22,13 @@
    (alter level open-close top-door :closed)
    (alter level open-close bottom-door :closed)))
 
-(defn- one-turn [snake apples]
+(defn- one-turn [snake apples level]
   (dosync
    (let [eaten-apple (apple-at-head @snake @apples)]
      (when eaten-apple
        (alter snake consume eaten-apple)
        (alter apples remove-apple eaten-apple))
-     (alter apples age)
+     (alter apples age level)
      (alter snake move))))
 
 (defn open-exit [level]
@@ -42,7 +42,7 @@
         turn-action (fn [repaint won lost]
                       (proxy [ActionListener] []
                         (actionPerformed [event]
-                          (one-turn snake apples)
+                          (one-turn snake apples level)
                           (when (and (door-is-open? @level bottom-door)
                                      (snake-is-out? @snake bottom-door))
                             (close-doors level))

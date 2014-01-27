@@ -30,7 +30,10 @@
 (defn remove-apple [apples eaten]
   (vec (remove #(= % eaten) apples)))
 
-(defn age [apples]
+(defn age [apples level]
   ^{:doc "rots all apples a bit"}
-  (vec (filter #(> (:remaining-nutrition %) 0)
-               (map age-apple apples))))
+  (if (seq apples)
+    (let [remaining (vec (filter #(> (:remaining-nutrition %) 0)
+                                 (map age-apple apples)))]
+      (if (seq remaining) remaining (initial-apples level)))
+    []))
