@@ -39,8 +39,8 @@
 (defn hits-wall? [snake-head level]
   (or
    (contains? (:walls level) snake-head)
-   (and (= top-door snake-head) (not (door-is-open? top-door)))
-   (and (= bottom-door snake-head) (not (door-is-open? bottom-door)))))
+   (and (= top-door snake-head) (not (door-is-open? level top-door)))
+   (and (= bottom-door snake-head) (not (door-is-open? level bottom-door)))))
 
 (defn open-close [level door new-state]
   (if (= bottom-door door)

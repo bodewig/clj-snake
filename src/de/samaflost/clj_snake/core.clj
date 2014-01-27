@@ -31,6 +31,9 @@
      (alter apples age)
      (alter snake move))))
 
+(defn open-exit [level]
+  (dosync
+   (alter level open-close top-door :open)))
 
 (defn- create-board []
   (let [snake (ref (new-snake true))
@@ -43,6 +46,9 @@
                           (when (and (door-is-open? @level bottom-door)
                                      (snake-is-out? @snake bottom-door))
                             (close-doors level))
+                          (when (not (or (seq @apples)
+                                         (door-is-open? @level top-door)))
+                            (open-exit level))
                           (if (is-lost? @snake @level)
                             (lost)
                             (repaint)))))]
