@@ -14,6 +14,10 @@
      (out-of-bounds? head)
      (hits-tail? head snake))))
 
+(defn is-won? [snake level]
+  (and (door-is-open? level top-door)
+       (= top-door (first (:body snake)))))
+
 (defn snake-is-out? [snake door]
   (not (hits-tail? door snake)))
 
@@ -49,9 +53,9 @@
                           (when (not (or (seq @apples)
                                          (door-is-open? @level top-door)))
                             (open-exit level))
-                          (if (is-lost? @snake @level)
-                            (lost)
-                            (repaint)))))]
+                          (cond (is-won? @snake @level) (won)
+                                (is-lost? @snake @level) (lost)
+                                :else (repaint)))))]
     (create-ui turn-action level snake apples)))
 
 (defn -main
