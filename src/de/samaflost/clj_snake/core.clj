@@ -45,6 +45,17 @@
    (alter level open-close top-door :closed)
    (alter apples re-initialize level)))
 
+(defn start-over [snake apples level close-exit-timer]
+  (.stop close-exit-timer)
+  (dosync
+   (ref-set snake (new-snake true))
+   (ref-set level (create-level))
+   (ref-set apples (initial-apples level))))
+
+(defn restart-or-exit [restart? snake apples level close-exit-timer]
+  (if (restart?) (start-over snake apples level close-exit-timer)
+      (System/exit 0)))
+
 (defn- create-board []
   (let [snake (ref (new-snake true))
         level (ref (create-level))
@@ -57,6 +68,7 @@
                                        (actionPerformed [event]
                                          (close-exit level apples))))
                            (.setRepeats false))
+        r-o-e #(restart-or-exit % snake apples level close-exit-timer)
         turn-timer (Timer. ms-per-turn
                            (proxy [ActionListener] []
                              (actionPerformed [event]
@@ -69,8 +81,8 @@
                                               (.isRunning close-exit-timer)))
                                  (open-exit level)
                                  (.restart close-exit-timer))
-                               (cond (is-won? @snake @level) ((:won ui))
-                                     (is-lost? @snake @level) ((:lost ui))
+                               (cond (is-won? @snake @level) (r-o-e (:won ui))
+                                     (is-lost? @snake @level) (r-o-e (:lost ui))
                                      :else ((:repaint ui))))))]
     (.start turn-timer)))
 

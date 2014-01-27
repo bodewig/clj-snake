@@ -64,6 +64,11 @@
   (let [new-dir (get key-code-to-direction key-code)]
     (when new-dir (dosync (alter snake change-direction new-dir)))))
 
+(defn ask-for-restart [frame title message]
+  (=
+   (JOptionPane/showConfirmDialog frame message title JOptionPane/YES_NO_OPTION)
+   JOptionPane/YES_OPTION))
+
 (defn create-ui [level snake apples]
   (let [frame (JFrame. "clj-snake")
         panel (doto (create-panel level snake apples)
@@ -80,6 +85,6 @@
       (.pack)
       (.setVisible true))
     {:repaint #(.repaint panel)
-     :won #(JOptionPane/showMessageDialog frame "You have won!")
-     :lost #(JOptionPane/showMessageDialog frame "Game Over!")}))
+     :won #(ask-for-restart frame "You have won!" "Start over?")
+     :lost #(ask-for-restart frame "Game Over!" "Try again?")}))
 
