@@ -6,12 +6,14 @@
 (def initial-nutrition 500)
 
 (defn- random-apple []
-  {
-   :location [(inc (rand-int (- (:width board-size) 2)))
-              (inc (rand-int (- (:height board-size) 2)))]
-   :color Color/RED
-   :remaining-nutrition initial-nutrition
-   :type :apple})
+  (let [min-init-nutrition (/ initial-nutrition 3)]
+    {
+     :location [(inc (rand-int (- (:width board-size) 2)))
+                (inc (rand-int (- (:height board-size) 2)))]
+     :color Color/RED
+     :remaining-nutrition (+ (rand-int (- initial-nutrition min-init-nutrition))
+                             min-init-nutrition)
+     :type :apple}))
 
 (defn- age-apple [apple]
   (let [new-nutrition (dec (:remaining-nutrition apple))]
