@@ -39,3 +39,6 @@
                                  (map age-apple apples)))]
       (if (seq remaining) remaining (initial-apples level)))
     []))
+
+(defn re-initialize [apples level]
+  (initial-apples level))
