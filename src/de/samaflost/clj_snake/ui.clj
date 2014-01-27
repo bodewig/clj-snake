@@ -1,5 +1,5 @@
 (ns de.samaflost.clj-snake.ui
-  (:import (javax.swing JPanel JFrame Timer JOptionPane)
+  (:import (javax.swing JPanel JFrame JOptionPane)
            (java.awt Color Dimension)
            (java.awt.event KeyListener KeyEvent))
   (:use [de.samaflost.clj-snake.config :only [board-size ms-per-turn pixel-per-point]]
@@ -64,7 +64,7 @@
   (let [new-dir (get key-code-to-direction key-code)]
     (when new-dir (dosync (alter snake change-direction new-dir)))))
 
-(defn create-ui [turn-action level snake apples]
+(defn create-ui [level snake apples]
   (let [frame (JFrame. "clj-snake")
         panel (doto (create-panel level snake apples)
                 (.setFocusable true)
@@ -74,13 +74,12 @@
                      (change-snake-direction snake (.getKeyCode e)))
                    (keyReleased [e])
                    (keyTyped [e]))))
-        turn-timer (Timer. ms-per-turn
-                           (turn-action #(.repaint panel)
-                                        #(JOptionPane/showMessageDialog frame "You have won!")
-                                        #(JOptionPane/showMessageDialog frame "Game Over!")))]
+        ]
     (doto frame
       (.add panel)
       (.pack)
       (.setVisible true))
-    (.start turn-timer)))
+    {:repaint #(.repaint panel)
+     :won #(JOptionPane/showMessageDialog frame "You have won!")
+     :lost #(JOptionPane/showMessageDialog frame "Game Over!")}))
 

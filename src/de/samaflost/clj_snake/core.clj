@@ -1,5 +1,6 @@
 (ns de.samaflost.clj-snake.core
-  (:import (java.awt.event ActionListener))
+  (:import (java.awt.event ActionListener)
+           (javax.swing Timer))
   (:use [de.samaflost.clj-snake apple config level snake ui])
   (:gen-class))
 
@@ -43,20 +44,21 @@
   (let [snake (ref (new-snake true))
         level (ref (create-level))
         apples (ref (initial-apples level))
-        turn-action (fn [repaint won lost]
-                      (proxy [ActionListener] []
-                        (actionPerformed [event]
-                          (one-turn snake apples level)
-                          (when (and (door-is-open? @level bottom-door)
-                                     (snake-is-out? @snake bottom-door))
-                            (close-doors level))
-                          (when (not (or (seq @apples)
-                                         (door-is-open? @level top-door)))
-                            (open-exit level))
-                          (cond (is-won? @snake @level) (won)
-                                (is-lost? @snake @level) (lost)
-                                :else (repaint)))))]
-    (create-ui turn-action level snake apples)))
+        ui (create-ui level snake apples)
+        turn-timer (Timer. ms-per-turn
+                           (proxy [ActionListener] []
+                             (actionPerformed [event]
+                               (one-turn snake apples level)
+                               (when (and (door-is-open? @level bottom-door)
+                                          (snake-is-out? @snake bottom-door))
+                                 (close-doors level))
+                               (when (not (or (seq @apples)
+                                              (door-is-open? @level top-door)))
+                                 (open-exit level))
+                               (cond (is-won? @snake @level) ((:won ui))
+                                     (is-lost? @snake @level) ((:lost ui))
+                                     :else ((:repaint ui))))))]
+    (.start turn-timer)))
 
 (defn -main
   [& args]
