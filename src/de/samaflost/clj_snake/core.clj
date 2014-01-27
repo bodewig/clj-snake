@@ -53,8 +53,8 @@
 
 (defn- create-board []
   (let [snake (ref (new-snake true))
-        apples (ref (initial-apples))
         level (ref (create-level))
+        apples (ref (initial-apples level))
         frame (JFrame. "clj-snake")
         panel (doto (create-panel level snake apples)
                 (.setFocusable true)

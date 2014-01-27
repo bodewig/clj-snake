@@ -1,13 +1,14 @@
 (ns de.samaflost.clj-snake.apple
   (:import (java.awt Color))
-  (:use [de.samaflost.clj-snake.config :only [board-size number-of-apples]]))
+  (:use [de.samaflost.clj-snake.config :only [board-size number-of-apples]]
+        [de.samaflost.clj-snake.level]))
 
 (def initial-nutrition 500)
 
 (defn- random-apple []
   {
-   :location [(rand-int (:width board-size))
-              (rand-int (:height board-size))]
+   :location [(inc (rand-int (- (:width board-size) 2)))
+              (inc (rand-int (- (:height board-size) 2)))]
    :color Color/RED
    :remaining-nutrition initial-nutrition
    :type :apple})
@@ -19,9 +20,12 @@
       :color (if (> new-nutrition (/ initial-nutrition 2))
                Color/RED Color/YELLOW))))
 
-(defn initial-apples []
+(defn initial-apples [level]
   ^{:doc "creates the initial set of apples"}
-  (vec (repeatedly number-of-apples random-apple)))
+  (vec (take number-of-apples
+             (distinct
+              (remove #(hits-wall? % level)
+                      (repeatedly random-apple))))))
 
 (defn remove-apple [apples eaten]
   (vec (remove #(= % eaten) apples)))
