@@ -10,22 +10,20 @@
 (def bottom-door
   (door (dec (:height board-size))))
 
-(defn remove-doors [walls]
-  (let [middle (/ (:width board-size) 2)]
-    (remove #(= bottom-door %)
-            (remove #(= top-door %) walls))))
+(defn framing []
+  (let [max-height (:height board-size)
+        max-width (:width board-size)]
+    (remove #(or (= bottom-door %) (= top-door %))
+            (concat (map #(vector 0 %) (range max-height))
+                    (map #(vector (dec max-width) %) (range max-height))
+                    (map #(vector % 0) (range max-width))
+                    (map #(vector % (dec max-height)) (range max-width))))))
 
 (defn initial-walls []
-  (let [max-height (dec (:height board-size))
-        max-width (dec (:width board-size))]
     (set
-     (remove-doors
-      (concat (map #(vector 0 %) (range (:height board-size)))
-              (map #(vector max-width %) (range (:height board-size)))
-              (map #(vector % 0) (range (:width board-size)))
-              (map #(vector % max-height) (range (:width board-size)))
-              ;; a single extra-wall to make things more interesting
-              (list [(/ (:width board-size) 2) (/ (:height board-size) 2)]))))))
+     (concat (framing)
+             ;; a single extra-wall to make things more interesting
+             (list [(/ (:width board-size) 2) (/ (:height board-size) 2)]))))
 
 (defn create-level []
   {:walls (initial-walls)
