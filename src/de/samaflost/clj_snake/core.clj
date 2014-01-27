@@ -1,6 +1,5 @@
 (ns de.samaflost.clj-snake.core
-  (:import (javax.swing JOptionPane)
-           (java.awt.event ActionListener))
+  (:import (java.awt.event ActionListener))
   (:use [de.samaflost.clj-snake apple config level snake ui])
   (:gen-class))
 
@@ -37,7 +36,7 @@
   (let [snake (ref (new-snake true))
         level (ref (create-level))
         apples (ref (initial-apples level))
-        turn-action (fn [frame panel]
+        turn-action (fn [repaint won lost]
                       (proxy [ActionListener] []
                         (actionPerformed [event]
                           (one-turn snake apples)
@@ -45,8 +44,8 @@
                                      (snake-is-out? @snake bottom-door))
                             (close-doors level))
                           (if (is-lost? @snake @level)
-                            (JOptionPane/showMessageDialog frame "Game Over!")
-                            (.repaint panel)))))]
+                            (lost)
+                            (repaint)))))]
     (create-ui turn-action level snake apples)))
 
 (defn -main

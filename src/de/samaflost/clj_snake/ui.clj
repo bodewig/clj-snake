@@ -1,5 +1,5 @@
 (ns de.samaflost.clj-snake.ui
-  (:import (javax.swing JPanel JFrame Timer)
+  (:import (javax.swing JPanel JFrame Timer JOptionPane)
            (java.awt Color Dimension)
            (java.awt.event KeyListener KeyEvent))
   (:use [de.samaflost.clj-snake.config :only [board-size ms-per-turn pixel-per-point]]
@@ -75,7 +75,9 @@
                    (keyReleased [e])
                    (keyTyped [e]))))
         turn-timer (Timer. ms-per-turn
-                           (turn-action frame panel))]
+                           (turn-action #(.repaint panel)
+                                        #(JOptionPane/showMessageDialog frame "You have won!")
+                                        #(JOptionPane/showMessageDialog frame "Game Over!")))]
     (doto frame
       (.add panel)
       (.pack)
