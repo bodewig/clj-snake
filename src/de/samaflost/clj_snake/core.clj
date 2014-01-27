@@ -20,18 +20,18 @@
     (when new-dir (dosync (alter snake change-direction new-dir)))))
 
 (defn- apple-at-head [snake apples]
-  (let [head (first (:body @snake))]
-    (some #(when (= (:location %) head) %) @apples)))
+  (let [head (first (:body snake))]
+    (some #(when (= (:location %) head) %) apples)))
 
 (defn- is-lost? [snake level]
-  (let [head (first (:body @snake))]
+  (let [head (first (:body snake))]
     (or 
-     (hits-wall? head @level)
+     (hits-wall? head level)
      (out-of-bounds? head)
-     (hits-tail? head @snake))))
+     (hits-tail? head snake))))
 
 (defn snake-is-out? [snake door]
-  (not (hits-tail? door @snake)))
+  (not (hits-tail? door snake)))
 
 (defn close-doors [level]
   (dosync
@@ -40,7 +40,7 @@
 
 (defn- one-turn [snake apples]
   (dosync
-   (let [eaten-apple (apple-at-head snake apples)]
+   (let [eaten-apple (apple-at-head @snake @apples)]
      (when eaten-apple
        (alter snake consume eaten-apple)
        (alter apples remove-apple eaten-apple))
@@ -77,9 +77,9 @@
                         (actionPerformed [event]
                           (one-turn snake apples)
                           (when (and (door-is-open? @level bottom-door)
-                                     (snake-is-out? snake bottom-door))
+                                     (snake-is-out? @snake bottom-door))
                             (close-doors level))
-                          (if (is-lost? snake level)
+                          (if (is-lost? @snake @level)
                             (JOptionPane/showMessageDialog frame "Game Over!")
                             (.repaint panel)))))]
     (doto frame
