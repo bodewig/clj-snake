@@ -30,6 +30,14 @@
      (out-of-bounds? head)
      (hits-tail? head @snake))))
 
+(defn snake-is-out? [snake door]
+  (not (hits-tail? door @snake)))
+
+(defn close-doors [level]
+  (dosync
+   (alter level open-close top-door :closed)
+   (alter level open-close bottom-door :closed)))
+
 (defn- one-turn [snake apples]
   (dosync
    (let [eaten-apple (apple-at-head snake apples)]
@@ -68,6 +76,9 @@
                       (proxy [ActionListener] []
                         (actionPerformed [event]
                           (one-turn snake apples)
+                          (when (and (door-is-open? @level bottom-door)
+                                     (snake-is-out? snake bottom-door))
+                            (close-doors level))
                           (if (is-lost? snake level)
                             (JOptionPane/showMessageDialog frame "Game Over!")
                             (.repaint panel)))))]
