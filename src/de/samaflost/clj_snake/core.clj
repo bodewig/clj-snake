@@ -2,7 +2,7 @@
   (:import (javax.swing JPanel JFrame Timer JOptionPane)
            (java.awt Dimension)
            (java.awt.event ActionListener KeyListener KeyEvent))
-  (:use [de.samaflost.clj-snake apple config snake painting])
+  (:use [de.samaflost.clj-snake apple config level snake painting])
   (:gen-class))
 
 
@@ -23,10 +23,12 @@
   (let [head (first (:body @snake))]
     (some #(when (= (:location %) head) %) @apples)))
 
-(defn- is-lost? [snake]
+(defn- is-lost? [snake level]
   (let [head (first (:body @snake))]
-    (or (out-of-bounds? head)
-        (hits-tail? head @snake))))
+    (or 
+     (hits-wall? head @level)
+     (out-of-bounds? head)
+     (hits-tail? head @snake))))
 
 (defn- one-turn [snake apples]
   (dosync
@@ -37,13 +39,14 @@
      (alter apples age)
      (alter snake move))))
 
-(defn- create-panel [snake apples]
+(defn- create-panel [level snake apples]
   (proxy [JPanel] []
     (getPreferredSize []
       (Dimension. (* (:width board-size) pixel-per-point)
                   (* (:height board-size)  pixel-per-point)))
     (paintComponent [g]
       (proxy-super paintComponent g)
+      (paint g @level)
       (paint g @snake)
       (doseq [a @apples]
         (paint g a)))))
@@ -51,8 +54,9 @@
 (defn- create-board []
   (let [snake (ref (new-snake true))
         apples (ref (initial-apples))
+        level (ref (create-level))
         frame (JFrame. "clj-snake")
-        panel (doto (create-panel snake apples)
+        panel (doto (create-panel level snake apples)
                 (.setFocusable true)
                 (.addKeyListener
                  (proxy [KeyListener] []
@@ -64,7 +68,7 @@
                       (proxy [ActionListener] []
                         (actionPerformed [event]
                           (one-turn snake apples)
-                          (if (is-lost? snake)
+                          (if (is-lost? snake level)
                             (JOptionPane/showMessageDialog frame "Game Over!")
                             (.repaint panel)))))]
     (doto frame

@@ -1,5 +1,7 @@
 (ns de.samaflost.clj-snake.painting
-  (:use [de.samaflost.clj-snake.config :only [pixel-per-point]]))
+  (:import (java.awt Color))
+  (:use [de.samaflost.clj-snake.config :only [pixel-per-point]]
+        [de.samaflost.clj-snake.level]))
 
 (defmulti paint (fn [g item] (:type item)))
 
@@ -21,3 +23,15 @@
                (* (second loc) pixel-per-point)
                pixel-per-point pixel-per-point)))
 
+(defmethod paint :level [g level]
+  ^{:doc "paint the snake"}
+  (let [all-walls
+        (concat (:walls level)
+                (when (= :closed (:top-door level)) (list top-door))
+                (when (= :closed (:bottom-door level)) (list bottom-door)))]
+    (doseq [pt all-walls]
+      (.setColor g Color/GRAY)
+      (.fillRect g
+                 (* (first pt) pixel-per-point)
+                 (* (second pt) pixel-per-point)
+                 pixel-per-point pixel-per-point))))

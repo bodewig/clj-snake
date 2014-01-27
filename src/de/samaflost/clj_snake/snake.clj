@@ -15,7 +15,7 @@
           player or at the top for the program-controlled snake"}
   {
    :body (list [(/ (:width board-size) 2)
-                (if player? (:height board-size) 0)])
+                (if player? (dec (:height board-size)) 0)])
    :direction (if player? :up :down)
    :to-grow 4
    :color (if player? Color/GREEN Color/BLUE)
@@ -41,8 +41,8 @@
 
 (defn out-of-bounds? [snake-head]
   (let [x (first snake-head) y (second snake-head)]
-    (or (< x 0) (> x (:width board-size))
-        (< y 0) (> y (:height board-size)))))
+    (or (< x 0) (>= x (:width board-size))
+        (< y 0) (>= y (:height board-size)))))
 
 (defn hits-tail? [snake-head snake]
   (contains? (set (next (:body snake))) snake-head))
