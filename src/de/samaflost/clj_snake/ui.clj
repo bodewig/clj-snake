@@ -73,14 +73,14 @@
   (.repaint game-panel)
   (.setText score-label (str @score)))
 
-(defn create-ui [level snake apples score]
+(defn create-ui [{:keys [level player apples score]}]
   (let [frame (JFrame. "clj-snake")
-        game-panel (doto (create-panel level snake apples)
+        game-panel (doto (create-panel level player apples)
                      (.setFocusable true)
                      (.addKeyListener
                       (proxy [KeyListener] []
                         (keyPressed [e]
-                          (change-snake-direction snake (.getKeyCode e)))
+                          (change-snake-direction player (.getKeyCode e)))
                         (keyReleased [e])
                         (keyTyped [e]))))
         score-label (JLabel. "0")
