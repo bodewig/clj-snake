@@ -6,7 +6,7 @@
 (def initial-nutrition 500)
 
 (defn- random-apple []
-  (let [min-init-nutrition (/ initial-nutrition 3)]
+  (let [min-init-nutrition (int (/ initial-nutrition 3))]
     {
      :location [(inc (rand-int (- (:width board-size) 2)))
                 (inc (rand-int (- (:height board-size) 2)))]

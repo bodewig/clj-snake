@@ -27,12 +27,15 @@
    (alter level open-close top-door :closed)
    (alter level open-close bottom-door :closed)))
 
-(defn- one-turn [snake apples level]
+(defn- one-turn [snake apples level time-to-escape score close-exit-timer]
   (dosync
    (let [eaten-apple (apple-at-head @snake @apples)]
      (when eaten-apple
        (alter snake consume eaten-apple)
+       (alter score +' (:remaining-nutrition eaten-apple))
        (alter apples remove-apple eaten-apple))
+     (when (.isRunning close-exit-timer)
+       (alter time-to-escape - ms-per-turn))
      (alter apples age level)
      (alter snake move))))
 
@@ -45,34 +48,44 @@
    (alter level open-close top-door :closed)
    (alter apples re-initialize level)))
 
-(defn start-over [snake apples level close-exit-timer]
+(defn start-over [snake apples level close-exit-timer time-to-escape score]
   (.stop close-exit-timer)
   (dosync
    (ref-set snake (new-snake true))
    (ref-set level (create-level))
-   (ref-set apples (initial-apples level))))
+   (ref-set apples (initial-apples level))
+   (ref-set time-to-escape ms-to-escape)
+   (ref-set score 0)))
 
-(defn restart-or-exit [restart? snake apples level close-exit-timer]
-  (if (restart?) (start-over snake apples level close-exit-timer)
+(defn restart-or-exit
+  [restart? snake apples level close-exit-timer time-to-escape score]
+  (if (restart?) (start-over snake apples level close-exit-timer time-to-escape score)
       (System/exit 0)))
+
+(defn bonus-remaining-time [score time-to-escape]
+  (dosync
+   (alter score +' @time-to-escape)))
 
 (defn- create-board []
   (let [snake (ref (new-snake true))
         level (ref (create-level))
         apples (ref (initial-apples level))
         time-to-escape (ref ms-to-escape)
-        ui (create-ui level snake apples)
+        score (ref 0)
+        ui (create-ui level snake apples score)
         close-exit-timer (doto
                              (Timer. ms-to-escape
                                      (proxy [ActionListener] []
                                        (actionPerformed [event]
                                          (close-exit level apples))))
                            (.setRepeats false))
-        r-o-e #(restart-or-exit % snake apples level close-exit-timer)
+        r-o-e #(restart-or-exit % snake apples level close-exit-timer
+                                time-to-escape score)
         turn-timer (Timer. ms-per-turn
                            (proxy [ActionListener] []
                              (actionPerformed [event]
-                               (one-turn snake apples level)
+                               (one-turn snake apples level time-to-escape score
+                                         close-exit-timer)
                                (when (and (door-is-open? @level bottom-door)
                                           (snake-is-out? @snake bottom-door))
                                  (close-doors level))
@@ -81,7 +94,10 @@
                                               (.isRunning close-exit-timer)))
                                  (open-exit level)
                                  (.restart close-exit-timer))
-                               (cond (is-won? @snake @level) (r-o-e (:won ui))
+                               (cond (is-won? @snake @level)
+                                     (do
+                                       (bonus-remaining-time score time-to-escape)
+                                       (r-o-e (:won ui)))
                                      (is-lost? @snake @level) (r-o-e (:lost ui))
                                      :else ((:repaint ui))))))]
     (.start turn-timer)))

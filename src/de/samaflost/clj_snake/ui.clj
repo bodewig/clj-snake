@@ -1,6 +1,6 @@
 (ns de.samaflost.clj-snake.ui
-  (:import (javax.swing JPanel JFrame JOptionPane)
-           (java.awt Color Dimension)
+  (:import (javax.swing JPanel JFrame JOptionPane JLabel SwingConstants)
+           (java.awt Color Dimension BorderLayout)
            (java.awt.event KeyListener KeyEvent))
   (:use [de.samaflost.clj-snake.config :only [board-size ms-per-turn pixel-per-point]]
         [de.samaflost.clj-snake.level :only [bottom-door top-door]]
@@ -69,22 +69,30 @@
    (JOptionPane/showConfirmDialog frame message title JOptionPane/YES_NO_OPTION)
    JOptionPane/YES_OPTION))
 
-(defn create-ui [level snake apples]
+(defn repaint [game-panel score-label score]
+  (.repaint game-panel)
+  (.setText score-label (str @score)))
+
+(defn create-ui [level snake apples score]
   (let [frame (JFrame. "clj-snake")
-        panel (doto (create-panel level snake apples)
-                (.setFocusable true)
-                (.addKeyListener
-                 (proxy [KeyListener] []
-                   (keyPressed [e]
-                     (change-snake-direction snake (.getKeyCode e)))
-                   (keyReleased [e])
-                   (keyTyped [e]))))
+        game-panel (doto (create-panel level snake apples)
+                     (.setFocusable true)
+                     (.addKeyListener
+                      (proxy [KeyListener] []
+                        (keyPressed [e]
+                          (change-snake-direction snake (.getKeyCode e)))
+                        (keyReleased [e])
+                        (keyTyped [e]))))
+        score-label (JLabel. "0")
         ]
     (doto frame
-      (.add panel)
+      (.add game-panel BorderLayout/CENTER)
+      (.add (doto (JPanel. (BorderLayout.))
+              (.add score-label BorderLayout/EAST))
+            BorderLayout/NORTH)
       (.pack)
       (.setVisible true))
-    {:repaint #(.repaint panel)
+    {:repaint #(repaint game-panel score-label score)
      :won #(ask-for-restart frame "You have won!" "Start over?")
      :lost #(ask-for-restart frame "Game Over!" "Try again?")}))
 
