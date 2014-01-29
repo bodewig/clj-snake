@@ -30,9 +30,14 @@
                              (if (> to-grow 0) body (butlast body)))
           :to-grow (if (> to-grow 1) (dec to-grow) 0))))
 
+(defn is-perpendicular? [dir1 dir2]
+  (= 0 (reduce + (map * (dirs dir1) (dirs dir2)))))
+
 (defn change-direction [snake new-dir]
   ^{:doc "changes the direction of the snake to new-dir"}
-  (assoc snake :direction new-dir))
+  (if (is-perpendicular? (:direction snake) new-dir)
+    (assoc snake :direction new-dir)
+    snake))
 
 (defn consume [snake apple]
   ^{:doc "grows the snake as it eats an apple"}
