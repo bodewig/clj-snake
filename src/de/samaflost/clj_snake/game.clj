@@ -32,7 +32,6 @@
   (let [head (first (:body snake))]
     (or 
      (hits-wall? head level)
-     (out-of-bounds? head)
      (hits-tail? head snake))))
 
 (defn is-won? [snake level]
