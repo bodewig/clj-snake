@@ -30,7 +30,7 @@
   (let [body (:body snake)
         to-grow (:to-grow snake)]
     (assoc snake :body (cons (new-head snake)
-                             (if (> to-grow 0) body (butlast body)))
+                             (if (pos? to-grow) body (butlast body)))
           :to-grow (if (> to-grow 1) (dec to-grow) 0))))
 
 (defn change-direction [snake new-dir]
