@@ -30,15 +30,13 @@
                       (repeatedly random-apple))))))
 
 (defn remove-apple [apples eaten]
-  (vec (remove #(= % eaten) apples)))
+  (vec (remove #{eaten} apples)))
 
 (defn age [apples level]
   ^{:doc "rots all apples a bit"}
-  (if (seq apples)
-    (let [remaining (vec (filter #(> (:remaining-nutrition %) 0)
-                                 (map age-apple apples)))]
-      (if (seq remaining) remaining (initial-apples level)))
-    []))
+  (let [remaining (vec (filter #(> (:remaining-nutrition %) 0)
+                               (map age-apple apples)))]
+    (if (seq remaining) remaining (initial-apples level))))
 
 (defn re-initialize [apples level]
   (initial-apples level))

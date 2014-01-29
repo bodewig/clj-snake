@@ -57,20 +57,26 @@
    (alter level open-close top-door :open)
    (ref-set mode :escaping)))
 
-(defn- one-turn [{:keys [player apples level time-left-to-escape score mode]}]
+(defn eating-only-turn-actions [{:keys [player apples level score mode]}]
+  (alter apples age level)
+  (let [eaten-apple (apple-at-head @player @apples)]
+    (when eaten-apple
+      (alter player consume eaten-apple)
+      (alter score +' (:remaining-nutrition eaten-apple))
+      (when-not (seq (alter apples remove-apple eaten-apple))
+        (open-exit level mode)))))
+
+(defn escaping-only-turn-actions [{:keys [time-left-to-escape apples level mode]}]
+  (when (<= (alter time-left-to-escape - ms-per-turn) 0)
+    (close-exit level apples mode)
+    (ref-set time-left-to-escape ms-to-escape)))
+
+(defn- one-turn [state]
   (dosync
-   (let [eaten-apple (apple-at-head @player @apples)]
-     (when eaten-apple
-       (alter player consume eaten-apple)
-       (alter score +' (:remaining-nutrition eaten-apple))
-       (when-not (seq (alter apples remove-apple eaten-apple))
-         (open-exit level mode)))
-     (when (and (= @mode :escaping)
-                (<= (alter time-left-to-escape - ms-per-turn) 0))
-       (close-exit level apples mode)
-       (ref-set time-left-to-escape ms-to-escape))
-     (alter apples age level)
-     (alter player move))))
+   (if (= (deref (:mode state)) :eating)
+     (eating-only-turn-actions state)
+     (escaping-only-turn-actions state))
+   (alter (:player state) move)))
 
 (defn start-over [state]
   (dosync
