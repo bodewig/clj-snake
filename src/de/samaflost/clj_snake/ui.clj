@@ -2,9 +2,10 @@
   (:import (javax.swing JPanel JFrame JOptionPane JLabel SwingConstants)
            (java.awt Color Dimension BorderLayout)
            (java.awt.event KeyListener KeyEvent))
-  (:use [de.samaflost.clj-snake.config :only [board-size ms-per-turn pixel-per-point]]
-        [de.samaflost.clj-snake.level :only [bottom-door top-door]]
-        [de.samaflost.clj-snake.snake :only [change-direction]]))
+  (:require [de.samaflost.clj-snake.config
+             :refer [board-size ms-per-turn pixel-per-point]]
+        [de.samaflost.clj-snake.level :refer [bottom-door top-door]]
+        [de.samaflost.clj-snake.snake :refer [change-direction]]))
 
 (defmulti paint (fn [g item] (:type item)))
 

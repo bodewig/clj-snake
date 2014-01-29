@@ -1,6 +1,6 @@
 (ns de.samaflost.clj-snake.collision-detection
-  (:use [de.samaflost.clj-snake.level
-         :only [bottom-door door-is-open? top-door]]))
+  (:require [de.samaflost.clj-snake.level
+             :refer [bottom-door door-is-open? top-door]]))
 
 ;;; General purpose collision detection used for detecting whether the
 ;;; snake hist a wall, itself, the other snake or the ball, the ball

@@ -1,8 +1,8 @@
 (ns de.samaflost.clj-snake.collision-detection-test
   (:require [clojure.test :refer :all]
-            [de.samaflost.clj-snake.collision-detection :refer :all])
-  (:use [de.samaflost.clj-snake.level
-         :only [bottom-door door-is-open? top-door]]))
+            [de.samaflost.clj-snake.collision-detection :refer :all]
+            [de.samaflost.clj-snake.level
+             :refer [bottom-door door-is-open? top-door]]))
 
 (deftest colliding-with-location
   (testing "collisions with something that has a location"

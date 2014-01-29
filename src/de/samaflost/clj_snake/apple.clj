@@ -1,7 +1,7 @@
 (ns de.samaflost.clj-snake.apple
   (:import (java.awt Color))
-  (:use [de.samaflost.clj-snake.config :only [board-size number-of-apples]]
-        [de.samaflost.clj-snake.collision-detection]))
+  (:require [de.samaflost.clj-snake.config :refer [board-size number-of-apples]]
+            [de.samaflost.clj-snake.collision-detection :refer :all]))
 
 ;;; generation and aging of apples
 
@@ -24,26 +24,30 @@
       :color (if (> new-nutrition (/ initial-nutrition 2))
                Color/RED Color/YELLOW))))
 
-(defn initial-apples [places-taken]
+(defn initial-apples
   "creates the initial set of apples"
+  [places-taken]
   (letfn [(place-is-taken? [apple]
             (some (partial collide? apple) places-taken))]
     (vec (take number-of-apples
                (remove place-is-taken?
                        (distinct (repeatedly random-apple)))))))
 
-(defn remove-apple [apples eaten]
+(defn remove-apple
   "Removes the given apple"
+   [apples eaten]
   (vec (remove #{eaten} apples)))
 
-(defn age [apples places-taken]
+(defn age
   "rots all apples a bit"
+  [apples places-taken]
   (let [remaining (vec (filter #(pos? (:remaining-nutrition %))
                                (map age-apple apples)))]
     (if (seq remaining) remaining (initial-apples places-taken))))
 
 
-(defn re-initialize [_ places-taken]
+(defn re-initialize
   "Really just redirects to initial-apples ignoring the first arg
    needed for the contract of alter"
+  [_ places-taken]
   (initial-apples places-taken))

@@ -1,5 +1,5 @@
 (ns de.samaflost.clj-snake.level
-  (:use [de.samaflost.clj-snake.config :only [board-size]]))
+  (:require [de.samaflost.clj-snake.config :refer [board-size]]))
 
 ;;; level holds the walls and doors
 
@@ -35,17 +35,20 @@
 (defn- key-for-door [door]
   (if (= bottom-door door) :bottom-door :top-door))
 
-(defn create-level []
+(defn create-level
   "Create the walls of the level and open doors"
+  []
   {:walls (initial-walls)
    :top-door :closed
    :bottom-door :open
    :type :level})
 
-(defn door-is-open? [level door]
+(defn door-is-open?
   "is the given door open in the given level?"
+  [level door]
   (= :open ((key-for-door door) level)))
 
-(defn open-close [level door new-state]
+(defn open-close
   "opens or closes a door"
+  [level door new-state]
   (assoc level (key-for-door door) new-state))

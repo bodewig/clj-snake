@@ -54,12 +54,11 @@
 
 (defn eating-only-turn-actions [{:keys [player apples level score mode]}]
   (alter apples age [@level @player])
-  (let [eaten-apple (apple-at-head @player @apples)]
-    (when eaten-apple
-      (alter player consume eaten-apple)
-      (alter score +' (:remaining-nutrition eaten-apple))
-      (when-not (seq (alter apples remove-apple eaten-apple))
-        (open-exit level mode)))))
+  (when-let [eaten-apple (apple-at-head @player @apples)]
+    (alter player consume eaten-apple)
+    (alter score +' (:remaining-nutrition eaten-apple))
+    (when-not (seq (alter apples remove-apple eaten-apple))
+      (open-exit level mode))))
 
 (defn escaping-only-turn-actions [state]
   (let [time-left-to-escape (:time-left-to-escape state)]
