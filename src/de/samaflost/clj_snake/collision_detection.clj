@@ -2,19 +2,24 @@
   (:use [de.samaflost.clj-snake.level
          :only [bottom-door door-is-open? top-door]]))
 
-(defmulti collide? (fn [probe target] [(:type probe) (:type target)]))
+(defmulti collide? (fn [probe target]
+                     (cond (find target :location) :has-location
+                           (find target :body) :has-body
+                           :else (:type target))))
 
-(defmethod collide? [:snake-head :apple] [snake-head apple]
-  (= (:location snake-head) (:location apple)))
+(defmethod collide? :has-location [{probe-location :location}
+                                   {target-location :location}]
+  (= probe-location target-location))
 
-(defmethod collide? [:snake-head :snake-body] [snake-head snake-body]
-  (contains? (set (:body snake-body)) (:location snake-head)))
+(defn location-in-collection [location collection]
+  (contains? (set collection) location))
 
-(defmethod collide? [:snake-head :level] [snake-head level]
-  (or
-   (contains? (:walls level) (:location snake-head))
-   (and (= top-door (:location snake-head))
-        (not (door-is-open? level top-door)))
-   (and (= bottom-door (:location snake-head))
-        (not (door-is-open? level bottom-door)))))
+(defmethod collide? :has-body [{:keys [location]} {:keys [body]}]
+  (location-in-collection location body))
 
+(defmethod collide? :level [{:keys [location]} level]
+  (letfn [(collides-with-closed-door [door]
+            (and (= location door) (not (door-is-open? level door))))]
+    (or
+     (location-in-collection location (:walls level))
+     (some collides-with-closed-door [top-door bottom-door]))))
