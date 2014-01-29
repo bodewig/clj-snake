@@ -1,7 +1,7 @@
 (ns de.samaflost.clj-snake.game
   (:import (java.awt.event ActionListener)
            (javax.swing Timer))
-  (:use [de.samaflost.clj-snake apple config level snake ui])
+  (:use [de.samaflost.clj-snake apple collision-detection config level snake ui])
   (:gen-class))
 
 ;;; Holds all game state and functions pertinent to the game's flow
@@ -25,14 +25,12 @@
     (state-for-new-level state (create-level))))
 
 (defn- apple-at-head [snake apples]
-  (let [head (first (:body snake))]
-    (some #(when (= (:location %) head) %) apples)))
+  (let [snake-head (head snake)]
+    (some #(when (collide? snake-head %) %) apples)))
 
 (defn- is-lost? [snake level]
-  (let [head (first (:body snake))]
-    (or 
-     (hits-wall? head level)
-     (hits-tail? head snake))))
+  (let [snake-head (head snake)]
+    (some #(collide? snake-head %) [level (tail snake)])))
 
 (defn is-won? [snake level]
   (and (door-is-open? level top-door)

@@ -44,5 +44,11 @@
   (assoc snake :to-grow
          (+ (:to-grow snake) (/ (:remaining-nutrition apple) 25))))
 
+(defn head [snake]
+  {:location (first (:body snake)) :type :snake-head})
+
+(defn tail [snake]
+  {:body (next (:body snake)) :type :snake-body})
+
 (defn hits-tail? [snake-head snake]
   (contains? (set (next (:body snake))) snake-head))
