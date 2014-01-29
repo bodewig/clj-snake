@@ -1,7 +1,7 @@
 (ns de.samaflost.clj-snake.apple
   (:import (java.awt Color))
   (:use [de.samaflost.clj-snake.config :only [board-size number-of-apples]]
-        [de.samaflost.clj-snake.level]))
+        [de.samaflost.clj-snake.collision-detection]))
 
 (def initial-nutrition 500)
 
@@ -26,7 +26,7 @@
   ^{:doc "creates the initial set of apples"}
   (vec (take number-of-apples
              (distinct
-              (remove #(hits-wall? % level)
+              (remove #(collide? % level)
                       (repeatedly random-apple))))))
 
 (defn remove-apple [apples eaten]

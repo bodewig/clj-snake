@@ -36,12 +36,6 @@
     (= (:bottom-door level) :open)
     (= (:top-door level) :open)))
 
-(defn hits-wall? [snake-head level]
-  (or
-   (contains? (:walls level) snake-head)
-   (and (= top-door snake-head) (not (door-is-open? level top-door)))
-   (and (= bottom-door snake-head) (not (door-is-open? level bottom-door)))))
-
 (defn open-close [level door new-state]
   (if (= bottom-door door)
     (assoc level :bottom-door new-state)
