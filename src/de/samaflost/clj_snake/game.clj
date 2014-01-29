@@ -34,10 +34,7 @@
 
 (defn is-won? [snake level]
   (and (door-is-open? level top-door)
-       (= top-door (first (:body snake)))))
-
-(defn snake-is-out? [snake door]
-  (not (hits-tail? door snake)))
+       (= top-door (:location (head snake)))))
 
 (defn close-doors [level]
   (dosync
@@ -94,20 +91,25 @@
   (let [state (create-game-state)
         ui (create-ui state)
         r-o-e #(restart-or-exit % state)
+        close-doors-timer (Timer.
+                           (* ms-per-turn (inc (:to-grow (deref (:player state)))))
+                           (proxy [ActionListener] []
+                             (actionPerformed [event]
+                               (close-doors (:level state)))))
         turn-timer (Timer. ms-per-turn
                            (proxy [ActionListener] []
                              (actionPerformed [event]
                                (one-turn state)
-                               (when (and (door-is-open? (deref (:level state)) bottom-door)
-                                          (snake-is-out? (deref (:player state)) bottom-door))
-                                 (close-doors (:level state)))
                                (cond (is-won? (deref (:player state)) (deref (:level state)))
                                      (do
                                        (bonus-remaining-time (:score state) (:time-left-to-escape state))
                                        (r-o-e (:won ui)))
                                      (is-lost? (deref (:player state)) (deref (:level state))) (r-o-e (:lost ui))
                                      :else ((:repaint ui))))))]
-    (.start turn-timer)))
+    (.start turn-timer)
+    (doto close-doors-timer
+      (.setRepeats false)
+      (.start))))
 
 (defn -main
   [& args]
