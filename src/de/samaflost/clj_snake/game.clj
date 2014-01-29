@@ -10,7 +10,7 @@
   (dosync
    (ref-set (:player game-state) (new-snake true))
    (ref-set (:level game-state) level)
-   (ref-set (:apples game-state) (initial-apples level))
+   (ref-set (:apples game-state) (initial-apples [level]))
    (ref-set (:time-left-to-escape game-state) ms-to-escape)
    (ref-set (:mode game-state) :eating))
   game-state)
@@ -41,10 +41,10 @@
    (alter level open-close top-door :closed)
    (alter level open-close bottom-door :closed)))
 
-(defn close-exit [level apples mode]
+(defn close-exit [{:keys [player level apples mode]}]
   (dosync
    (alter level open-close top-door :closed)
-   (alter apples re-initialize level)
+   (alter apples re-initialize [@level @player])
    (ref-set mode :eating)))
 
 (defn open-exit [level mode]
@@ -53,7 +53,7 @@
    (ref-set mode :escaping)))
 
 (defn eating-only-turn-actions [{:keys [player apples level score mode]}]
-  (alter apples age level)
+  (alter apples age [@level @player])
   (let [eaten-apple (apple-at-head @player @apples)]
     (when eaten-apple
       (alter player consume eaten-apple)
@@ -61,10 +61,11 @@
       (when-not (seq (alter apples remove-apple eaten-apple))
         (open-exit level mode)))))
 
-(defn escaping-only-turn-actions [{:keys [time-left-to-escape apples level mode]}]
-  (when (<= (alter time-left-to-escape - ms-per-turn) 0)
-    (close-exit level apples mode)
-    (ref-set time-left-to-escape ms-to-escape)))
+(defn escaping-only-turn-actions [state]
+  (let [time-left-to-escape (:time-left-to-escape state)]
+    (when (<= (alter time-left-to-escape - ms-per-turn) 0)
+      (close-exit state)
+      (ref-set time-left-to-escape ms-to-escape))))
 
 (defn- one-turn [state]
   (dosync

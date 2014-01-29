@@ -22,21 +22,23 @@
       :color (if (> new-nutrition (/ initial-nutrition 2))
                Color/RED Color/YELLOW))))
 
-(defn initial-apples [level]
+(defn initial-apples [places-taken]
   ^{:doc "creates the initial set of apples"}
-  (vec (take number-of-apples
-             (distinct
-              (remove #(collide? % level)
-                      (repeatedly random-apple))))))
+  (letfn [(place-is-taken? [apple]
+            (some #(collide? apple %) places-taken))]
+    (vec (take number-of-apples
+               (distinct
+                (remove #(place-is-taken? %)
+                        (repeatedly random-apple)))))))
 
 (defn remove-apple [apples eaten]
   (vec (remove #{eaten} apples)))
 
-(defn age [apples level]
+(defn age [apples places-taken]
   ^{:doc "rots all apples a bit"}
   (let [remaining (vec (filter #(> (:remaining-nutrition %) 0)
                                (map age-apple apples)))]
-    (if (seq remaining) remaining (initial-apples level))))
+    (if (seq remaining) remaining (initial-apples places-taken))))
 
-(defn re-initialize [apples level]
-  (initial-apples level))
+(defn re-initialize [apples places-taken]
+  (initial-apples places-taken))
