@@ -1,10 +1,24 @@
 (ns de.samaflost.clj-snake.game
   (:import (java.awt.event ActionListener)
+           (java.util.concurrent Executors TimeUnit)
            (javax.swing Timer))
   (:use [de.samaflost.clj-snake apple collision-detection config level snake ui])
   (:gen-class))
 
 ;;; Holds all game state and functions pertinent to the game's flow
+
+(def scheduler
+  ^:private
+  (Executors/newScheduledThreadPool 1))
+
+(defn- schedule-closing-doors [{:keys [level player]}]
+  (letfn [(close-doors []
+            (dosync
+             (doseq [d [top-door bottom-door]]
+               (alter level open-close d :closed))))]
+    (.schedule scheduler close-doors
+               (* ms-per-turn (inc (:to-grow @player)))
+               TimeUnit/MILLISECONDS)))
 
 (defn state-for-new-level
   "Set up the state for starting in a new level - may be the first one"
@@ -99,38 +113,30 @@
 (defn- start-over [state]
   (dosync
    (state-for-new-level state (create-level))
-   (ref-set (:score state) 0)))
+   (ref-set (:score state) 0))
+  (schedule-closing-doors state))
 
 (defn- restart-or-exit
   [restart? state]
   (if (restart?) (start-over state) (System/exit 0)))
 
-(defn- close-doors [level]
-  (dosync
-   (doseq [d [top-door bottom-door]]
-     (alter level open-close d :closed))))
-
 (defn- create-board []
   (let [state (create-game-state)
         ui (create-ui state)
         r-o-e #(restart-or-exit % state)
-        close-doors-timer (Timer.
-                           (* ms-per-turn (inc (:to-grow (deref (:player state)))))
+        executor (Executors/newScheduledThreadPool 1)
+        turn-timer (Timer. (/ ms-per-turn 2)
                            (proxy [ActionListener] []
                              (actionPerformed [event]
-                               (close-doors (:level state)))))
-        turn-timer (Timer. ms-per-turn
-                           (proxy [ActionListener] []
-                             (actionPerformed [event]
-                               (one-turn state)
                                (case (deref (:mode state))
                                  :won (r-o-e (:won ui))
                                  :lost (r-o-e (:lost ui))
                                  ((:repaint ui))))))]
     (.start turn-timer)
-    (doto close-doors-timer
-      (.setRepeats false)
-      (.start))))
+    (.scheduleAtFixedRate scheduler #(one-turn state)
+                          ms-per-turn ms-per-turn
+                          TimeUnit/MILLISECONDS)
+    (schedule-closing-doors state)))
 
 (defn -main
   [& args]
