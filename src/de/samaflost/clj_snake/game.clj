@@ -6,7 +6,9 @@
 
 ;;; Holds all game state and functions pertinent to the game's flow
 
-(defn state-for-new-level [game-state level]
+(defn state-for-new-level
+  "Set up the state for starting in a new level - may be the first one"
+  [game-state level]
   (dosync
    (ref-set (:player game-state) (new-snake true))
    (ref-set (:level game-state) level)
@@ -15,7 +17,7 @@
    (ref-set (:mode game-state) :eating))
   game-state)
 
-(defn create-game-state []
+(defn- create-game-state []
   (let [state {:player (ref [])
                :level (ref [])
                :apples (ref [])
@@ -24,68 +26,89 @@
                :mode (ref :eating)}]
     (state-for-new-level state (create-level))))
 
+(defn- item-colliding-with-snake-head [snake items]
+  (let [snake-head (head snake)]
+    (first (filter (partial collide? snake-head) items))))
+
 (defn- apple-at-head [snake apples]
-  (let [snake-head (head snake)]
-    (some #(when (collide? snake-head %) %) apples)))
+  (item-colliding-with-snake-head snake apples))
 
-(defn- is-lost? [snake level]
-  (let [snake-head (head snake)]
-    (some #(collide? snake-head %) [level (tail snake)])))
+(defn- is-lost? [{:keys [player level]}]
+  (item-colliding-with-snake-head @player [@level (tail @player)]))
 
-(defn is-won? [snake level]
-  (and (door-is-open? level top-door)
-       (= top-door (:location (head snake)))))
+(defn- is-won? [{:keys [player level mode]}]
+  (and
+   (= :escaping @mode)
+   (door-is-open? @level top-door)
+   (= top-door (:location (head @player)))))
 
-(defn close-doors [level]
-  (dosync
-   (alter level open-close top-door :closed)
-   (alter level open-close bottom-door :closed)))
+(defn eval-won-or-lost
+  "Returns :won or :lost when appropriate or nil if neither is true
+   right now"
+  [state]
+  (if (is-won? state) :won
+      (when (is-lost? state) :lost)))
 
-(defn close-exit [{:keys [player level apples mode]}]
-  (dosync
-   (alter level open-close top-door :closed)
-   (alter apples re-initialize [@level @player])
-   (ref-set mode :eating)))
+(defn- eat [player apple score]
+  (alter player consume apple)
+  (alter score +' (:remaining-nutrition apple)))
 
-(defn open-exit [level mode]
-  (dosync
-   (alter level open-close top-door :open)
-   (ref-set mode :escaping)))
+(defn- enter-escaping-mode [level mode]
+  (ref-set mode :escaping)
+  (alter level open-close top-door :open))
 
-(defn eating-only-turn-actions [{:keys [player apples level score mode]}]
+(defn eating-only-turn-actions
+  "stuff done in a turn that starts by the player trying to eat apples.
+   Must be called from within a transaction."
+  [{:keys [player apples level score mode]}]
   (alter apples age [@level @player])
   (when-let [eaten-apple (apple-at-head @player @apples)]
-    (alter player consume eaten-apple)
-    (alter score +' (:remaining-nutrition eaten-apple))
+    (eat player eaten-apple score)
     (when-not (seq (alter apples remove-apple eaten-apple))
-      (open-exit level mode))))
+      (enter-escaping-mode level mode))))
 
-(defn escaping-only-turn-actions [state]
+(defn- re-enter-eating-mode [{:keys [player level apples mode time-left-to-escape]}]
+  (alter level open-close top-door :closed)
+  (alter apples re-initialize [@level @player])
+  (ref-set mode :eating)
+  (ref-set time-left-to-escape ms-to-escape))
+
+(defn escaping-only-turn-actions
+  "stuff done in a turn that starts by the player trying to leave the level.
+   Must be called from within a transaction."
+  [state]
   (let [time-left-to-escape (:time-left-to-escape state)]
     (when (<= (alter time-left-to-escape - ms-per-turn) 0)
-      (close-exit state)
-      (ref-set time-left-to-escape ms-to-escape))))
+      (re-enter-eating-mode state))))
+
+(defn won-actions [{:keys [score time-left-to-escape]}]
+  "stuff done in a turn if the player has escaped the level"
+  (alter score +' @time-left-to-escape))
 
 (defn- one-turn [state]
   (dosync
-   (if (= (deref (:mode state)) :eating)
-     (eating-only-turn-actions state)
-     (escaping-only-turn-actions state))
-   (alter (:player state) move)))
+   (alter (:player state) move)
+   (when-let [new-state (eval-won-or-lost state)]
+     (ref-set (:mode state) new-state))
+   (case (deref (:mode state))
+     :eating (eating-only-turn-actions state)
+     :escaping (escaping-only-turn-actions state)
+     :won (won-actions state)
+     nil)))
 
-(defn start-over [state]
+(defn- start-over [state]
   (dosync
    (state-for-new-level state (create-level))
    (ref-set (:score state) 0)))
 
-(defn restart-or-exit
+(defn- restart-or-exit
   [restart? state]
-  (if (restart?) (start-over state)
-      (System/exit 0)))
+  (if (restart?) (start-over state) (System/exit 0)))
 
-(defn bonus-remaining-time [score time-left-to-escape]
+(defn- close-doors [level]
   (dosync
-   (alter score +' @time-left-to-escape)))
+   (doseq [d [top-door bottom-door]]
+     (alter level open-close d :closed))))
 
 (defn- create-board []
   (let [state (create-game-state)
@@ -100,12 +123,10 @@
                            (proxy [ActionListener] []
                              (actionPerformed [event]
                                (one-turn state)
-                               (cond (is-won? (deref (:player state)) (deref (:level state)))
-                                     (do
-                                       (bonus-remaining-time (:score state) (:time-left-to-escape state))
-                                       (r-o-e (:won ui)))
-                                     (is-lost? (deref (:player state)) (deref (:level state))) (r-o-e (:lost ui))
-                                     :else ((:repaint ui))))))]
+                               (case (deref (:mode state))
+                                 :won (r-o-e (:won ui))
+                                 :lost (r-o-e (:lost ui))
+                                 ((:repaint ui))))))]
     (.start turn-timer)
     (doto close-doors-timer
       (.setRepeats false)
