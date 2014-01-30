@@ -1,7 +1,8 @@
 (ns de.samaflost.clj-snake.ui
-  (:import (javax.swing JPanel JFrame JOptionPane JLabel SwingConstants)
+  (:import (javax.swing JPanel JFrame JOptionPane JLabel
+                        SwingConstants Timer)
            (java.awt Color Dimension BorderLayout)
-           (java.awt.event KeyListener KeyEvent))
+           (java.awt.event KeyListener KeyEvent ActionListener))
   (:require [de.samaflost.clj-snake.config
              :refer [board-size ms-per-turn pixel-per-point]]
         [de.samaflost.clj-snake.level :refer [bottom-door top-door door-is-open?]]
@@ -74,7 +75,22 @@
   (.repaint game-panel)
   (.setText score-label (str @score)))
 
-(defn create-ui [{:keys [level player apples score]}]
+(defn- restart-or-exit [start-over restart?]
+  (if restart? (start-over) (System/exit 0)))
+
+(defn- create-repaint-timer [start-over frame game-panel score-label mode score]
+  (let [r-or-e (partial restart-or-exit start-over)]
+    (Timer. (/ ms-per-turn 2)
+            (proxy [ActionListener] []
+              (actionPerformed [event]
+                (case @mode
+                  :won (r-or-e
+                        (ask-for-restart frame "You have won!" "Start over?"))
+                  :lost (r-or-e
+                         (ask-for-restart frame "Game Over!" "Try again?"))
+                  (repaint game-panel score-label score)))))))
+
+(defn create-ui [{:keys [level player apples score mode]} start-over]
   (let [frame (JFrame. "clj-snake")
         game-panel (doto (create-panel level player apples)
                      (.setFocusable true)
@@ -85,7 +101,9 @@
                         (keyReleased [e])
                         (keyTyped [e]))))
         score-label (JLabel. "0")
-        ]
+        repaint-timer (create-repaint-timer start-over
+                                            frame game-panel score-label 
+                                            mode score)]
     (doto frame
       (.add game-panel BorderLayout/CENTER)
       (.add (doto (JPanel. (BorderLayout.))
@@ -93,7 +111,4 @@
             BorderLayout/NORTH)
       (.pack)
       (.setVisible true))
-    {:repaint #(repaint game-panel score-label score)
-     :won #(ask-for-restart frame "You have won!" "Start over?")
-     :lost #(ask-for-restart frame "Game Over!" "Try again?")}))
-
+    (.start repaint-timer)))

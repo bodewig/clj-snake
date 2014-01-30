@@ -1,7 +1,5 @@
 (ns de.samaflost.clj-snake.game
-  (:import (java.awt.event ActionListener)
-           (java.util.concurrent Executors TimeUnit)
-           (javax.swing Timer))
+  (:import (java.util.concurrent Executors TimeUnit))
   (:use [de.samaflost.clj-snake apple collision-detection config level snake ui])
   (:gen-class))
 
@@ -116,23 +114,9 @@
    (ref-set (:score state) 0))
   (schedule-closing-doors state))
 
-(defn- restart-or-exit
-  [restart? state]
-  (if (restart?) (start-over state) (System/exit 0)))
-
 (defn- create-board []
   (let [state (create-game-state)
-        ui (create-ui state)
-        r-o-e #(restart-or-exit % state)
-        executor (Executors/newScheduledThreadPool 1)
-        turn-timer (Timer. (/ ms-per-turn 2)
-                           (proxy [ActionListener] []
-                             (actionPerformed [event]
-                               (case (deref (:mode state))
-                                 :won (r-o-e (:won ui))
-                                 :lost (r-o-e (:lost ui))
-                                 ((:repaint ui))))))]
-    (.start turn-timer)
+        ui (create-ui state #(start-over state))]
     (.scheduleAtFixedRate scheduler #(one-turn state)
                           ms-per-turn ms-per-turn
                           TimeUnit/MILLISECONDS)
