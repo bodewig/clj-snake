@@ -9,13 +9,13 @@
   ^:private
   (Executors/newScheduledThreadPool 1))
 
-(defn- schedule-closing-doors [{:keys [level player]}]
+(defn- schedule-closing-doors [{:keys [level player count-down]}]
   (letfn [(close-doors []
             (dosync
              (doseq [d [top-door bottom-door]]
                (alter level open-close d :closed))))]
     (.schedule scheduler close-doors
-               (* ms-per-turn (inc (:to-grow @player)))
+               (+ (* ms-per-turn (inc (:to-grow @player))) @count-down)
                TimeUnit/MILLISECONDS)))
 
 (defn state-for-new-level
@@ -26,7 +26,8 @@
    (ref-set (:level game-state) level)
    (ref-set (:apples game-state) (initial-apples [level]))
    (ref-set (:time-left-to-escape game-state) ms-to-escape)
-   (ref-set (:mode game-state) :eating))
+   (ref-set (:mode game-state) :starting)
+   (ref-set (:count-down game-state) 3000))
   game-state)
 
 (defn- create-game-state []
@@ -35,7 +36,8 @@
                :apples (ref [])
                :time-left-to-escape (ref 0)
                :score (ref 0)
-               :mode (ref :eating)}]
+               :count-down (ref 0)
+               :mode (ref :starting)}]
     (state-for-new-level state (create-level))))
 
 (defn- item-colliding-with-snake-head [snake items]
@@ -60,6 +62,12 @@
   [state]
   (if (is-won? state) :won
       (when (is-lost? state) :lost)))
+
+(defn- move-and-eval-game [state]
+  (when (#{:eating :escaping} (deref (:mode state)))
+    (alter (:player state) move)
+    (when-let [new-state (eval-won-or-lost state)]
+      (ref-set (:mode state) new-state))))
 
 (defn- eat [player apple score]
   (alter player consume apple)
@@ -97,15 +105,21 @@
   "stuff done in a turn if the player has escaped the level"
   (alter score +' @time-left-to-escape))
 
+(defn starting-actions
+  "stuff done before the level actually starts.
+   Must be called from within a transaction."
+  [{:keys [mode count-down]}]
+  (when (neg? (alter count-down - ms-per-turn))
+    (ref-set mode :eating)))
+
 (defn- one-turn [state]
   (dosync
-   (alter (:player state) move)
-   (when-let [new-state (eval-won-or-lost state)]
-     (ref-set (:mode state) new-state))
+   (move-and-eval-game state)
    (case (deref (:mode state))
      :eating (eating-only-turn-actions state)
      :escaping (escaping-only-turn-actions state)
      :won (won-actions state)
+     :starting (starting-actions state)
      nil)))
 
 (defn- start-over [state]

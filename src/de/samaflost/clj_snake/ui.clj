@@ -21,9 +21,10 @@
   (* (second location) pixel-per-point))
 
 (defn- paint-rect [g color location]
-  (.setColor g color)
-  (.fillRect g (scale-x location) (scale-y location)
-             pixel-per-point pixel-per-point))
+  (doto g
+    (.setColor color)
+    (.fillRect (scale-x location) (scale-y location)
+               pixel-per-point pixel-per-point)))
 
 (defmethod paint :snake [g snake]
   (doseq [pt (:body snake)]
@@ -31,27 +32,38 @@
 
 (defmethod paint :apple [g apple]
   (let [loc (:location apple)]
-    (.setColor g (:color apple))
-    (.fillOval g (scale-x loc) (scale-y loc)
-               pixel-per-point pixel-per-point)))
+    (doto g
+      (.setColor (:color apple))
+      (.fillOval (scale-x loc) (scale-y loc)
+                 pixel-per-point pixel-per-point))))
 
 (defmethod paint :level [g level]
   (let [all-walls
         (concat (:walls level)
                 (filter (complement (partial door-is-open? level))
                         [top-door bottom-door]))]
-    (doseq [pt all-walls]
-      (paint-rect g Color/GRAY pt))))
+    (dorun (map (partial paint-rect g Color/GRAY) all-walls))))
 
-(defn- create-panel [level snake apples]
+(defn- paint-count-down [g count-down]
+  (let [number (str (inc (int (/ count-down 1000))))
+        bounds (.. g (getFont) (getStringBounds number (.getFontRenderContext g)))
+        x (int (/ (- (* (:width board-size) pixel-per-point) (.getWidth bounds)) 2))
+        y (int (/ (+ (* (:height board-size) pixel-per-point) (.getHeight bounds)) 2))]
+    (doto g
+      (.setColor Color/MAGENTA)
+      (.drawString number x y))))
+
+(defn- create-panel [mode level snake apples count-down]
   (proxy [JPanel] []
     (getPreferredSize []
       (Dimension. (* (:width board-size) pixel-per-point)
                   (* (:height board-size)  pixel-per-point)))
     (paintComponent [g]
       (proxy-super paintComponent g)
-      (doseq [item (flatten [@level @snake @apples])]
-        (paint g item)))))
+      (if (= @mode :starting)
+        (paint-count-down g @count-down)
+        (dorun (map (partial paint g) (flatten [@snake @apples]))))
+      (paint g @level))))
 
 (defn- create-escape-panel [time-left-to-escape]
   (let [width (* (:width board-size) pixel-per-point)
@@ -63,11 +75,12 @@
       (proxy-super paintComponent g)
       (let [fraction-left (/ @time-left-to-escape ms-to-escape)]
         (when (< fraction-left 1)
-          (.setColor g
-                     (cond (> fraction-left 0.7) Color/GREEN
-                           (> fraction-left 0.3) Color/YELLOW
-                           :else Color/RED))
-          (.fillRect g 0 0 (* width fraction-left) height)))))))
+          (doto g
+            (.setColor
+             (cond (> fraction-left 0.7) Color/GREEN
+                   (> fraction-left 0.3) Color/YELLOW
+                   :else Color/RED))
+            (.fillRect 0 0 (* width fraction-left) height))))))))
 
 (def key-code-to-direction
   ^{:private true}
@@ -111,10 +124,10 @@
                            (ask-for-restart frame "Game Over!" "Try again?"))
                     )))))))
 
-(defn create-ui [{:keys [level player apples score mode time-left-to-escape]}
+(defn create-ui [{:keys [level player apples score mode time-left-to-escape count-down]}
                  start-over]
   (let [frame (JFrame. "clj-snake")
-        game-panel (doto (create-panel level player apples)
+        game-panel (doto (create-panel mode level player apples count-down)
                      (.setFocusable true)
                      (.addKeyListener
                       (proxy [KeyListener] []
@@ -129,7 +142,9 @@
                                             mode score)]
     (let [f (.getFont score-label)]
       (.setFont score-label
-                (Font. (.getName f) (Font/BOLD) (* 2 pixel-per-point))))
+                (Font. (.getName f) (Font/BOLD) (* 2 pixel-per-point)))
+      (.setFont game-panel
+                (Font. (.getName f) (Font/BOLD) (* 10 pixel-per-point))))
     (doto frame
       (.add game-panel BorderLayout/CENTER)
       (.add (doto (JPanel. (BorderLayout.))

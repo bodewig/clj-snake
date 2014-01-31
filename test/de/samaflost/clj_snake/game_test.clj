@@ -10,6 +10,7 @@
    :apples (ref [{:location [7 7] :remaining-nutrition 100}])
    :time-left-to-escape (ref 1000)
    :score (ref 0)
+   :count-down (ref 1000)
    :mode (ref :eating)})
 
 (defn eating-only-and-return [s]
@@ -95,3 +96,20 @@
                                     :mode (ref :escaping)
                                     :level (ref {:top-door :closed :type :level})
                                     :player (ref {:body [top-door]})))))))
+
+(defn starting-and-return [s]
+  (dosync (starting-actions s))
+  s)
+
+(deftest turn-in-starting-mode
+  (testing "counts down and eventually switches to :eating"
+    (is (= 900 (deref (:count-down (starting-and-return
+                                    (assoc (base-state)
+                                      :mode (ref :starting)))))))
+    (is (= :starting (deref (:mode (starting-and-return
+                                    (assoc (base-state)
+                                      :mode (ref :starting)))))))
+    (is (= :eating (deref (:mode (starting-and-return
+                                  (assoc (base-state)
+                                    :count-down (ref 99)
+                                    :mode (ref :starting)))))))))
