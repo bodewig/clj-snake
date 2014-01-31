@@ -100,11 +100,21 @@
   (when (<= (alter time-left-to-escape - ms-per-turn) 0)
     (re-enter-eating-mode state)))
 
-(defn won-actions [{:keys [score time-left-to-escape level] :as state}]
-  "stuff done in a turn if the player has escaped the level"
+(defn leaving-actions
+  "Make it look as if the snake was leaving through the top door.
+   Must be called from within a transaction."
+  [{:keys [player mode level] :as state}]
+  (when-not (seq (:body (alter player fake-leaving)))
+    (state-for-new-level state (next-level @level))
+    (schedule-closing-doors state)))
+
+(defn won-actions
+  "stuff done in a turn if the player has escaped the level.
+   Must be called from within a transaction."
+  [{:keys [score time-left-to-escape mode] :as state}]
   (alter score +' @time-left-to-escape)
-  (state-for-new-level state (next-level @level))
-  (schedule-closing-doors state))
+  (ref-set mode :leaving)
+  (leaving-actions state))
 
 (defn starting-actions
   "stuff done before the level actually starts.
@@ -121,6 +131,7 @@
      :escaping (escaping-only-turn-actions state)
      :won (won-actions state)
      :starting (starting-actions state)
+     :leaving (leaving-actions state)
      nil)))
 
 (defn- start-over [{:keys [score] :as state}]

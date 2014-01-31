@@ -85,3 +85,11 @@
     (is (= {:body [[3 4] [5 6]]} (tail {:body [[1 2] [3 4] [5 6]]})))
     (is (= {:body nil} (tail {:body [[1 2]]})))
     (is (= {:body nil} (tail {:body []})))))
+
+(deftest faking-leaving
+  (testing "chops tail"
+    (is (= [[1 1]] (:body (fake-leaving {:body [[1 1] [2 2] [3 3]]}))))
+    (is (nil? (:body (fake-leaving {:body [[1 1] [2 2]]}))))
+    (is (nil? (:body (fake-leaving {:body [[1 1]]}))))
+    (is (nil? (:body (fake-leaving {:body []}))))
+    (is (nil? (:body (fake-leaving {:body nil}))))))

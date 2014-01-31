@@ -60,3 +60,7 @@
   [snake]
   {:body (next (:body snake))})
 
+(defn fake-leaving
+  "chops of two items from the tail of the snake"
+  [snake]
+  (assoc snake :body (butlast (butlast (:body snake)))))

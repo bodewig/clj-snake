@@ -75,7 +75,8 @@
 
 (deftest turn-in-won-mode
   (testing "is awarded time left"
-    (is (= 1000 (deref (:score (won-and-return (base-state))))))))
+    (is (= 1000 (deref (:score (won-and-return (base-state))))))
+    (is (= :leaving (deref (:mode (won-and-return (base-state))))))))
 
 (deftest won-or-lost
   (testing "properly evaluates won-lost states"
@@ -113,3 +114,14 @@
                                   (assoc (base-state)
                                     :count-down (ref 99)
                                     :mode (ref :starting)))))))))
+
+(defn leaving-and-return [s]
+  (dosync (leaving-actions s))
+  s)
+
+(deftest turn-in-leaving-mode
+  (testing "is awarded time left"
+    (is (= [[4 4]] (:body (deref (:player (leaving-and-return (base-state)))))))
+    (is (= :starting (deref (:mode (leaving-and-return
+                                    (assoc (base-state)
+                                      :player (ref {:body []})))))))))
