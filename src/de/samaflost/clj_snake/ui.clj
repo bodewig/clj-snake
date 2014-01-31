@@ -95,6 +95,13 @@
   (when-let [new-dir (get key-code-to-direction key-code)]
     (dosync (alter snake change-direction new-dir))))
 
+(defn- create-cursor-listener [player]
+  (proxy [KeyListener] []
+    (keyPressed [e]
+      (change-snake-direction player (.getKeyCode e)))
+    (keyReleased [e])
+    (keyTyped [e])))
+
 (defn ask-for-restart [frame title message]
   (=
    (JOptionPane/showConfirmDialog frame message title JOptionPane/YES_NO_OPTION)
@@ -129,12 +136,7 @@
   (let [frame (JFrame. "clj-snake")
         game-panel (doto (create-panel mode level player apples count-down)
                      (.setFocusable true)
-                     (.addKeyListener
-                      (proxy [KeyListener] []
-                        (keyPressed [e]
-                          (change-snake-direction player (.getKeyCode e)))
-                        (keyReleased [e])
-                        (keyTyped [e]))))
+                     (.addKeyListener (create-cursor-listener player)))
         score-label (JLabel. "0")
         escape-panel (create-escape-panel time-left-to-escape)
         repaint-timer (create-repaint-timer start-over

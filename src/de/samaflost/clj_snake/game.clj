@@ -63,11 +63,11 @@
   (if (is-won? state) :won
       (when (is-lost? state) :lost)))
 
-(defn- move-and-eval-game [state]
-  (when (#{:eating :escaping} (deref (:mode state)))
-    (alter (:player state) move)
+(defn- move-and-eval-game [{:keys [mode player] :as state}]
+  (when (#{:eating :escaping} @mode)
+    (alter player move)
     (when-let [new-state (eval-won-or-lost state)]
-      (ref-set (:mode state) new-state))))
+      (ref-set mode new-state))))
 
 (defn- eat [player apple score]
   (alter player consume apple)
@@ -96,10 +96,9 @@
 (defn escaping-only-turn-actions
   "stuff done in a turn that starts by the player trying to leave the level.
    Must be called from within a transaction."
-  [state]
-  (let [time-left-to-escape (:time-left-to-escape state)]
-    (when (<= (alter time-left-to-escape - ms-per-turn) 0)
-      (re-enter-eating-mode state))))
+  [{:keys [time-left-to-escape] :as state}]
+  (when (<= (alter time-left-to-escape - ms-per-turn) 0)
+    (re-enter-eating-mode state)))
 
 (defn won-actions [{:keys [score time-left-to-escape]}]
   "stuff done in a turn if the player has escaped the level"
@@ -112,20 +111,20 @@
   (when (neg? (alter count-down - ms-per-turn))
     (ref-set mode :eating)))
 
-(defn- one-turn [state]
+(defn- one-turn [{:keys [mode] :as state}]
   (dosync
    (move-and-eval-game state)
-   (case (deref (:mode state))
+   (case @mode
      :eating (eating-only-turn-actions state)
      :escaping (escaping-only-turn-actions state)
      :won (won-actions state)
      :starting (starting-actions state)
      nil)))
 
-(defn- start-over [state]
+(defn- start-over [{:keys [score] :as state}]
   (dosync
    (state-for-new-level state (create-level))
-   (ref-set (:score state) 0))
+   (ref-set score 0))
   (schedule-closing-doors state))
 
 (defn- create-board []
