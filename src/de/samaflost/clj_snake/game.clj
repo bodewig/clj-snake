@@ -100,9 +100,11 @@
   (when (<= (alter time-left-to-escape - ms-per-turn) 0)
     (re-enter-eating-mode state)))
 
-(defn won-actions [{:keys [score time-left-to-escape]}]
+(defn won-actions [{:keys [score time-left-to-escape level] :as state}]
   "stuff done in a turn if the player has escaped the level"
-  (alter score +' @time-left-to-escape))
+  (alter score +' @time-left-to-escape)
+  (state-for-new-level state (next-level @level))
+  (schedule-closing-doors state))
 
 (defn starting-actions
   "stuff done before the level actually starts.

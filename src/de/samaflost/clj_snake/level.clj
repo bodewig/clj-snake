@@ -52,3 +52,8 @@
   "opens or closes a door"
   [level door new-state]
   (assoc level (key-for-door door) new-state))
+
+(defn next-level
+  "Returns the level after the given one"
+  [level]
+  (create-level))

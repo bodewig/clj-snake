@@ -118,18 +118,13 @@
 (defn- create-repaint-timer [start-over
                              frame game-panel score-label escape-panel
                              mode score]
-  (let [r-or-e (partial restart-or-exit start-over)]
-    (Timer. (/ ms-per-turn 2)
-            (proxy [ActionListener] []
-              (actionPerformed [event]
-                (repaint game-panel score-label escape-panel score)
-                (when (#{:won :lost} @mode)
-                  (case @mode
-                    :won (r-or-e
-                          (ask-for-restart frame "You have won!" "Start over?"))
-                    :lost (r-or-e
-                           (ask-for-restart frame "Game Over!" "Try again?"))
-                    )))))))
+  (Timer. (/ ms-per-turn 2)
+          (proxy [ActionListener] []
+            (actionPerformed [event]
+              (repaint game-panel score-label escape-panel score)
+              (when (= @mode :lost)
+                (restart-or-exit start-over
+                                 (ask-for-restart frame "Game Over!" "Try again?")))))))
 
 (defn create-ui [{:keys [level player apples score mode time-left-to-escape count-down]}
                  start-over]
