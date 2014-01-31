@@ -4,7 +4,7 @@
            (java.awt Color Dimension BorderLayout Font)
            (java.awt.event KeyListener KeyEvent ActionListener))
   (:require [de.samaflost.clj-snake.config
-             :refer [board-size ms-per-turn pixel-per-point]]
+             :refer [board-size ms-per-turn pixel-per-point ms-to-escape]]
         [de.samaflost.clj-snake.level :refer [bottom-door top-door door-is-open?]]
         [de.samaflost.clj-snake.snake :refer [change-direction]]))
 
@@ -53,6 +53,22 @@
       (doseq [item (flatten [@level @snake @apples])]
         (paint g item)))))
 
+(defn- create-escape-panel [time-left-to-escape]
+  (let [width (* (:width board-size) pixel-per-point)
+        height (* 2  pixel-per-point)]
+  (proxy [JPanel] []
+    (getPreferredSize []
+      (Dimension. width height))
+    (paintComponent [g]
+      (proxy-super paintComponent g)
+      (let [fraction-left (/ @time-left-to-escape ms-to-escape)]
+        (when (< fraction-left 1)
+          (.setColor g
+                     (cond (> fraction-left 0.7) Color/GREEN
+                           (> fraction-left 0.3) Color/YELLOW
+                           :else Color/RED))
+          (.fillRect g 0 0 (* width fraction-left) height)))))))
+
 (def key-code-to-direction
   ^{:private true}
   {
@@ -71,19 +87,22 @@
    (JOptionPane/showConfirmDialog frame message title JOptionPane/YES_NO_OPTION)
    JOptionPane/YES_OPTION))
 
-(defn repaint [game-panel score-label score]
+(defn repaint [game-panel score-label escape-panel score]
   (.repaint game-panel)
+  (.repaint escape-panel)
   (.setText score-label (str @score)))
 
 (defn- restart-or-exit [start-over restart?]
   (if restart? (start-over) (System/exit 0)))
 
-(defn- create-repaint-timer [start-over frame game-panel score-label mode score]
+(defn- create-repaint-timer [start-over
+                             frame game-panel score-label escape-panel
+                             mode score]
   (let [r-or-e (partial restart-or-exit start-over)]
     (Timer. (/ ms-per-turn 2)
             (proxy [ActionListener] []
               (actionPerformed [event]
-                (repaint game-panel score-label score)
+                (repaint game-panel score-label escape-panel score)
                 (when (#{:won :lost} @mode)
                   (case @mode
                     :won (r-or-e
@@ -92,7 +111,8 @@
                            (ask-for-restart frame "Game Over!" "Try again?"))
                     )))))))
 
-(defn create-ui [{:keys [level player apples score mode]} start-over]
+(defn create-ui [{:keys [level player apples score mode time-left-to-escape]}
+                 start-over]
   (let [frame (JFrame. "clj-snake")
         game-panel (doto (create-panel level player apples)
                      (.setFocusable true)
@@ -103,8 +123,9 @@
                         (keyReleased [e])
                         (keyTyped [e]))))
         score-label (JLabel. "0")
+        escape-panel (create-escape-panel time-left-to-escape)
         repaint-timer (create-repaint-timer start-over
-                                            frame game-panel score-label 
+                                            frame game-panel score-label escape-panel 
                                             mode score)]
     (let [f (.getFont score-label)]
       (.setFont score-label
@@ -112,7 +133,8 @@
     (doto frame
       (.add game-panel BorderLayout/CENTER)
       (.add (doto (JPanel. (BorderLayout.))
-              (.add score-label BorderLayout/EAST))
+              (.add score-label BorderLayout/EAST)
+              (.add escape-panel BorderLayout/SOUTH))
             BorderLayout/NORTH)
       (.pack)
       (.setVisible true))
