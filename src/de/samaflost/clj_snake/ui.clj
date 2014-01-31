@@ -1,7 +1,7 @@
 (ns de.samaflost.clj-snake.ui
   (:import (javax.swing JPanel JFrame JOptionPane JLabel
                         SwingConstants Timer)
-           (java.awt Color Dimension BorderLayout)
+           (java.awt Color Dimension BorderLayout Font)
            (java.awt.event KeyListener KeyEvent ActionListener))
   (:require [de.samaflost.clj-snake.config
              :refer [board-size ms-per-turn pixel-per-point]]
@@ -83,12 +83,14 @@
     (Timer. (/ ms-per-turn 2)
             (proxy [ActionListener] []
               (actionPerformed [event]
-                (case @mode
-                  :won (r-or-e
-                        (ask-for-restart frame "You have won!" "Start over?"))
-                  :lost (r-or-e
-                         (ask-for-restart frame "Game Over!" "Try again?"))
-                  (repaint game-panel score-label score)))))))
+                (repaint game-panel score-label score)
+                (when (#{:won :lost} @mode)
+                  (case @mode
+                    :won (r-or-e
+                          (ask-for-restart frame "You have won!" "Start over?"))
+                    :lost (r-or-e
+                           (ask-for-restart frame "Game Over!" "Try again?"))
+                    )))))))
 
 (defn create-ui [{:keys [level player apples score mode]} start-over]
   (let [frame (JFrame. "clj-snake")
@@ -104,6 +106,9 @@
         repaint-timer (create-repaint-timer start-over
                                             frame game-panel score-label 
                                             mode score)]
+    (let [f (.getFont score-label)]
+      (.setFont score-label
+                (Font. (.getName f) (Font/BOLD) (* 2 pixel-per-point))))
     (doto frame
       (.add game-panel BorderLayout/CENTER)
       (.add (doto (JPanel. (BorderLayout.))
