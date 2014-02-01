@@ -21,14 +21,13 @@
                        (u/distinct-location (repeatedly random-ball)))))))
 
 (defn bounce [{:keys [location direction] :as ball} places-taken]
-  (first
-   (remove #(collide? % places-taken)
-           (concat
-            (map #(assoc ball
-                    :location (u/next-location location (dirs %))
-                    :direction %)
-                 [direction
-                  (mod (inc direction) 4)
-                  (mod (dec direction) 4)
-                  (mod (+ direction 2) 4)])
-            (vector ball)))))
+  (some #(when-not (collide? % places-taken) %)
+        (concat
+         (map #(assoc ball
+                 :location (u/next-location location (dirs %))
+                 :direction %)
+              [direction
+               (mod (inc direction) 4)
+               (mod (dec direction) 4)
+               (mod (+ direction 2) 4)])
+         (vector ball))))
