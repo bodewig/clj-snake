@@ -26,16 +26,22 @@
     (.fillRect (scale-x location) (scale-y location)
                pixel-per-point pixel-per-point)))
 
+(defn- paint-oval [g item]
+  (let [loc (:location item)]
+    (doto g
+      (.setColor (:color item))
+      (.fillOval (scale-x loc) (scale-y loc)
+                 pixel-per-point pixel-per-point))))
+
 (defmethod paint :snake [g snake]
   (doseq [pt (:body snake)]
     (paint-rect g (:color snake) pt)))
 
 (defmethod paint :apple [g apple]
-  (let [loc (:location apple)]
-    (doto g
-      (.setColor (:color apple))
-      (.fillOval (scale-x loc) (scale-y loc)
-                 pixel-per-point pixel-per-point))))
+  (paint-oval g apple))
+
+(defmethod paint :ball [g ball]
+  (paint-oval g ball))
 
 (defmethod paint :level [g level]
   (let [all-walls
@@ -53,7 +59,7 @@
       (.setColor Color/MAGENTA)
       (.drawString number x y))))
 
-(defn- create-panel [mode level snake apples count-down]
+(defn- create-panel [mode level snake apples balls count-down]
   (proxy [JPanel] []
     (getPreferredSize []
       (Dimension. (* (:width board-size) pixel-per-point)
@@ -62,7 +68,7 @@
       (proxy-super paintComponent g)
       (if (= @mode :starting)
         (paint-count-down g @count-down)
-        (dorun (map (partial paint g) (flatten [@snake @apples]))))
+        (dorun (map (partial paint g) (flatten [@snake @apples @balls]))))
       (paint g @level))))
 
 (defn- create-escape-panel [time-left-to-escape]
@@ -126,10 +132,11 @@
                 (restart-or-exit start-over
                                  (ask-for-restart frame "Game Over!" "Try again?")))))))
 
-(defn create-ui [{:keys [level player apples score mode time-left-to-escape count-down]}
+(defn create-ui [{:keys [level player apples score mode
+                         time-left-to-escape balls count-down]}
                  start-over]
   (let [frame (JFrame. "clj-snake")
-        game-panel (doto (create-panel mode level player apples count-down)
+        game-panel (doto (create-panel mode level player apples balls count-down)
                      (.setFocusable true)
                      (.addKeyListener (create-cursor-listener player)))
         score-label (JLabel. "0")
