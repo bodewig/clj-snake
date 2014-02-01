@@ -3,6 +3,8 @@
   (:require [de.samaflost.clj-snake.collision-detection :refer :all]
             [de.samaflost.clj-snake.util :as u]))
 
+;;; ball(s) creation and movement
+
 (def ^:private dirs [[1 1] [-1 1] [-1 -1] [1 -1]])
 
 (defn- random-ball []
@@ -20,6 +22,7 @@
                (remove place-is-taken?
                        (u/distinct-location (repeatedly random-ball)))))))
 
+;; only non-private for tests
 (defn bounce [{:keys [location direction] :as ball} places-taken]
   (some #(when-not (collide? % places-taken) %)
         (concat
@@ -31,3 +34,17 @@
                (mod (dec direction) 4)
                (mod (+ direction 2) 4)])
          (vector ball))))
+
+(defn bounce-all
+  "Moves all balls one step taking collisions and reflections into account"
+  [balls places-taken]
+  (letfn [(wrapper [bs new]
+            ((fn [remaining-bs new-bs]
+               (if-let [s (seq remaining-bs)]
+                 (recur (rest s)
+                        (conj new-bs
+                              (bounce (first s)
+                                      (concat places-taken new-bs (rest s)))))
+                 new-bs))
+             bs new))]
+    (wrapper balls [])))

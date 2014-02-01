@@ -66,8 +66,9 @@
   (if (is-won? state) :won
       (when (is-lost? state) :lost)))
 
-(defn- move-and-eval-game [{:keys [mode player] :as state}]
+(defn- move-and-eval-game [{:keys [mode player balls level] :as state}]
   (when (#{:eating :escaping} @mode)
+    (alter balls bounce-all [@player @level])
     (alter player move)
     (when-let [new-state (eval-won-or-lost state)]
       (ref-set mode new-state))))

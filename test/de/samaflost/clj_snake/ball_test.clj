@@ -101,3 +101,20 @@
              (bounce {:location [1 1] :direction 2} wall)))
       (is (= {:location [1 1] :direction 3}
              (bounce {:location [1 1] :direction 3} wall))))))
+
+(deftest bouncy-many-balls
+  (testing "no collisions"
+    (is (= [{:location [2 2] :direction 0} {:location [2 4] :direction 1}]
+           (bounce-all [{:location [1 1] :direction 0} {:location [3 3] :direction 1}]
+                       []))))
+  (testing "crossing over"
+    (is (= [{:location [2 2] :direction 0} {:location [1 2] :direction 1}]
+           (bounce-all [{:location [1 1] :direction 0} {:location [2 1] :direction 1}]
+                       []))))
+  (testing "bouncing against each other"
+    (is (= [{:location [2 2] :direction 0} {:location [2 0] :direction 2}]
+           (bounce-all [{:location [1 1] :direction 0} {:location [3 1] :direction 1}]
+                       [])))
+    (is (= [{:location [0 2] :direction 1} {:location [1 3] :direction 1}]
+           (bounce-all [{:location [1 1] :direction 0} {:location [2 2] :direction 1}]
+                       [])))))
