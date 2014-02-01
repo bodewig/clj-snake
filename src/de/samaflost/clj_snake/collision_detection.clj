@@ -15,7 +15,8 @@
   (fn [probe target]
     (cond (find target :location) :has-location
           (find target :body) :has-body
-          :else (:type target))))
+          (:type target) (:type target)
+          (seq target) :is-seq)))
 
 (defmethod collide? :has-location [{probe-location :location}
                                    {target-location :location}]
@@ -30,3 +31,6 @@
     (or
      (location-in-collection? location (:walls level))
      (some collides-with-closed-door [top-door bottom-door]))))
+
+(defmethod collide? :is-seq [probe target]
+  (some (partial collide? probe) target))

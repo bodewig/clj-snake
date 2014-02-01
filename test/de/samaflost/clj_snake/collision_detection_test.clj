@@ -77,3 +77,10 @@
                    :bottom-door :closed
                    :type :level}))))
 
+(deftest colliding-with-sequenence-of-locations
+  (testing "collisions with something that has a location"
+    (is (collide? {:location [1 2]} [{:location [0 2]} {:location [1 2]}]))
+    (is (not (collide? {:location [1 2]} [{:location [0 2]}])))
+    (is (not (collide? {:location [1 2]} [{:location [1 3]}])))
+    (is (not (collide? {:location [1 2]} [{:location []}])))))
+

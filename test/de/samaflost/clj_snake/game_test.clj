@@ -8,6 +8,7 @@
   {:player (ref {:body [[4 4] [4 5] [4 6]] :direction :left :to-grow 1})
    :level (ref {:walls [[1 1]] :type :level :top-door :closed})
    :apples (ref [{:location [7 7] :remaining-nutrition 100}])
+   :balls (ref [{:location [8 8]}])
    :time-left-to-escape (ref 1000)
    :score (ref 0)
    :count-down (ref 1000)
@@ -89,6 +90,8 @@
                                      :level (ref {:walls [[4 4]]
                                                   :type :level
                                                   :top-door :closed})))))
+    (is (= :lost (eval-won-or-lost (assoc (base-state)
+                                     :balls (ref [{:location [4 4]}])))))
     (is (= :lost (eval-won-or-lost (assoc (base-state)
                                      :player (ref {:body
                                                    [[4 4] [4 5] [5 5]

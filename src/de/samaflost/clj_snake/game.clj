@@ -1,6 +1,6 @@
 (ns de.samaflost.clj-snake.game
   (:import (java.util.concurrent Executors TimeUnit))
-  (:use [de.samaflost.clj-snake apple collision-detection config level snake ui])
+  (:use [de.samaflost.clj-snake apple ball collision-detection config level snake ui])
   (:gen-class))
 
 ;;; Holds all game state and functions pertinent to the game's flow
@@ -21,19 +21,22 @@
 (defn state-for-new-level
   "Set up the state for starting in a new level - may be the first one"
   [game-state level]
-  (dosync
-   (ref-set (:player game-state) (new-snake true))
-   (ref-set (:level game-state) level)
-   (ref-set (:apples game-state) (initial-apples [level]))
-   (ref-set (:time-left-to-escape game-state) ms-to-escape)
-   (ref-set (:mode game-state) :starting)
-   (ref-set (:count-down game-state) 3000))
-  game-state)
+  (let [apples (initial-apples [level])]
+    (dosync
+     (ref-set (:player game-state) (new-snake true))
+     (ref-set (:level game-state) level)
+     (ref-set (:apples game-state) apples)
+     (ref-set (:balls game-state) (create-balls 1 [level apples]))
+     (ref-set (:time-left-to-escape game-state) ms-to-escape)
+     (ref-set (:mode game-state) :starting)
+     (ref-set (:count-down game-state) 3000))
+    game-state))
 
 (defn- create-game-state []
   (let [state {:player (ref [])
                :level (ref [])
                :apples (ref [])
+               :balls (ref [])
                :time-left-to-escape (ref 0)
                :score (ref 0)
                :count-down (ref 0)
@@ -47,8 +50,8 @@
 (defn- apple-at-head [snake apples]
   (item-colliding-with-snake-head snake apples))
 
-(defn- is-lost? [{:keys [player level]}]
-  (item-colliding-with-snake-head @player [@level (tail @player)]))
+(defn- is-lost? [{:keys [player level balls]}]
+  (item-colliding-with-snake-head @player [@level (tail @player) @balls]))
 
 (defn- is-won? [{:keys [player level mode]}]
   (and
