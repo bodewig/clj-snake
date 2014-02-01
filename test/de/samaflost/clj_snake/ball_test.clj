@@ -16,3 +16,88 @@
       (is (not (some (set (:location (second places-taken)))
                      (map :location (create-balls 5 places-taken))))))))
 
+(deftest bounce-single-ball
+  (testing "bouncing with no obstacles"
+    (is (= {:location [2 2] :direction 0}
+           (bounce {:location [1 1] :direction 0} [])))
+    (is (= {:location [0 2] :direction 1}
+           (bounce {:location [1 1] :direction 1} [])))
+    (is (= {:location [0 0] :direction 2}
+           (bounce {:location [1 1] :direction 2} [])))
+    (is (= {:location [2 0] :direction 3}
+           (bounce {:location [1 1] :direction 3} []))))
+  (testing "bouncing with vertical wall to the left"
+    (let [wall (map #(array-map :location [0 %]) (range 0 3))]
+      (is (= {:location [2 2] :direction 0}
+             (bounce {:location [1 1] :direction 0} wall)))
+      (is (= {:location [2 2] :direction 0}
+             (bounce {:location [1 1] :direction 1} wall)))
+      (is (= {:location [2 0] :direction 3}
+             (bounce {:location [1 1] :direction 2} wall)))
+      (is (= {:location [2 0] :direction 3}
+             (bounce {:location [1 1] :direction 3} wall)))))
+  (testing "bouncing with vertical wall to the right"
+    (let [wall (map #(array-map :location [2 %]) (range 0 3))]
+      (is (= {:location [0 2] :direction 1}
+             (bounce {:location [1 1] :direction 0} wall)))
+      (is (= {:location [0 2] :direction 1}
+             (bounce {:location [1 1] :direction 1} wall)))
+      (is (= {:location [0 0] :direction 2}
+             (bounce {:location [1 1] :direction 2} wall)))
+      (is (= {:location [0 0] :direction 2}
+             (bounce {:location [1 1] :direction 3} wall)))))
+  (testing "bouncing with horizontal wall at the top"
+    (let [wall (map #(array-map :location [% 0]) (range 0 3))]
+      (is (= {:location [2 2] :direction 0}
+             (bounce {:location [1 1] :direction 0} wall)))
+      (is (= {:location [0 2] :direction 1}
+             (bounce {:location [1 1] :direction 1} wall)))
+      (is (= {:location [0 2] :direction 1}
+             (bounce {:location [1 1] :direction 2} wall)))
+      (is (= {:location [2 2] :direction 0}
+             (bounce {:location [1 1] :direction 3} wall)))))
+  (testing "bouncing with horizontal wall at the bottom"
+    (let [wall (map #(array-map :location [% 2]) (range 0 3))]
+      (is (= {:location [2 0] :direction 3}
+             (bounce {:location [1 1] :direction 0} wall)))
+      (is (= {:location [0 0] :direction 2}
+             (bounce {:location [1 1] :direction 1} wall)))
+      (is (= {:location [0 0] :direction 2}
+             (bounce {:location [1 1] :direction 2} wall)))
+      (is (= {:location [2 0] :direction 3}
+             (bounce {:location [1 1] :direction 3} wall)))))
+  (testing "bouncing in a corner"
+    (is (= {:location [0 0] :direction 2}
+           (bounce {:location [1 1] :direction 0}
+                   (concat
+                    (map #(array-map :location [% 2]) (range 0 3))
+                    (map #(array-map :location [2 %]) (range 0 3))))))
+    (is (= {:location [2 0] :direction 3}
+           (bounce {:location [1 1] :direction 1}
+                   (concat
+                    (map #(array-map :location [% 2]) (range 0 3))
+                    (map #(array-map :location [0 %]) (range 0 3))))))
+    (is (= {:location [2 2] :direction 0}
+           (bounce {:location [1 1] :direction 2}
+                   (concat
+                    (map #(array-map :location [% 0]) (range 0 3))
+                    (map #(array-map :location [0 %]) (range 0 3))))))
+    (is (= {:location [0 2] :direction 1}
+           (bounce {:location [1 1] :direction 3}
+                   (concat
+                    (map #(array-map :location [% 0]) (range 0 3))
+                    (map #(array-map :location [2 %]) (range 0 3)))))))
+  (testing "stuck"
+    (let [wall (concat
+                (map #(array-map :location [% 2]) (range 0 3))
+                (map #(array-map :location [% 0]) (range 0 3))
+                (map #(array-map :location [0 %]) (range 0 3))
+                (map #(array-map :location [2 %]) (range 0 3)))]
+      (is (= {:location [1 1] :direction 0}
+             (bounce {:location [1 1] :direction 0} wall)))
+      (is (= {:location [1 1] :direction 1}
+             (bounce {:location [1 1] :direction 1} wall)))
+      (is (= {:location [1 1] :direction 2}
+             (bounce {:location [1 1] :direction 2} wall)))
+      (is (= {:location [1 1] :direction 3}
+             (bounce {:location [1 1] :direction 3} wall))))))

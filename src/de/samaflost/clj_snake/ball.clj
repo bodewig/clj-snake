@@ -8,7 +8,7 @@
 (defn- random-ball []
   (assoc (u/randomly-located-thing)
     :color Color/ORANGE
-    :direction (dirs (rand-int 4))
+    :direction (rand-int 4)
     :type :ball))
 
 (defn create-balls
@@ -20,3 +20,15 @@
                (remove place-is-taken?
                        (u/distinct-location (repeatedly random-ball)))))))
 
+(defn bounce [{:keys [location direction] :as ball} places-taken]
+  (first
+   (remove #(collide? % places-taken)
+           (concat
+            (map #(assoc ball
+                    :location (u/next-location location (dirs %))
+                    :direction %)
+                 [direction
+                  (mod (inc direction) 4)
+                  (mod (dec direction) 4)
+                  (mod (+ direction 2) 4)])
+            (vector ball)))))

@@ -13,9 +13,9 @@
   "Tests whether probe and target collide where probe must be a map
    with a :location key - dispatches based on target"
   (fn [probe target]
-    (cond (find target :location) :has-location
-          (find target :body) :has-body
-          (:type target) (:type target)
+    (cond (and (associative? target) (find target :location)) :has-location
+          (and (associative? target) (find target :body)) :has-body
+          (and (associative? target) (find target :type)) (:type target)
           (seq target) :is-seq)))
 
 (defmethod collide? :has-location [{probe-location :location}
@@ -34,3 +34,5 @@
 
 (defmethod collide? :is-seq [probe target]
   (some (partial collide? probe) target))
+
+(defmethod collide? :default [probe target] nil)
