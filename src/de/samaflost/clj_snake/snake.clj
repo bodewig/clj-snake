@@ -1,18 +1,17 @@
 (ns de.samaflost.clj-snake.snake
   (:import (java.awt Color))
-  (:require [de.samaflost.clj-snake.config :refer [board-size]]
+  (:require [de.samaflost.clj-snake.config :refer [board-size ai-strategy]]
             [de.samaflost.clj-snake.util :as u]))
 
 ;;; snake creation, movement and slicing
 
 (def dirs
-  ^{:private true}
-  {:up [0 -1] :down [0 1] :left [-1 0] :right [1 0]})
+  {:up [0 -1] :down [0 1] :left [-1 0] :right [1 0] :stand [0 0]})
 
-(defn- new-head [snake]
+(defn new-head [snake]
   (u/next-location (first (:body snake)) (dirs (:direction snake))))
 
-(defn- is-perpendicular? [dir1 dir2]
+(defn is-perpendicular? [dir1 dir2]
   (= 0 (reduce + (map * (dirs dir1) (dirs dir2)))))
 
 (defn new-snake
@@ -25,6 +24,7 @@
    :to-grow 4
    :color (if player? Color/GREEN Color/BLUE)
    :type :snake
+   :strategy ai-strategy
    })
 
 (defn move

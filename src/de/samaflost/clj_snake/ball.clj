@@ -24,7 +24,7 @@
 
 ;; only non-private for tests
 (defn bounce [{:keys [location direction] :as ball} places-taken]
-  (some #(when-not (collide? % places-taken) %)
+  (some (partial u/no-collisions places-taken)
         (concat
          (map #(assoc ball
                  :location (u/next-location location (dirs %))

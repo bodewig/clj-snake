@@ -1,6 +1,6 @@
 (ns de.samaflost.clj-snake.game
   (:import (java.util.concurrent Executors TimeUnit))
-  (:use [de.samaflost.clj-snake apple ball collision-detection config level snake ui])
+  (:use [de.samaflost.clj-snake ai apple ball collision-detection config level snake ui])
   (:gen-class))
 
 ;;; Holds all game state and functions pertinent to the game's flow
@@ -24,6 +24,7 @@
   (let [apples (initial-apples [level])]
     (dosync
      (ref-set (:player game-state) (new-snake true))
+     (ref-set (:ai game-state) (new-snake false))
      (ref-set (:level game-state) level)
      (ref-set (:apples game-state) apples)
      (ref-set (:balls game-state) (create-balls 1 [level apples]))
@@ -34,6 +35,7 @@
 
 (defn- create-game-state []
   (let [state {:player (ref [])
+               :ai (ref [])
                :level (ref [])
                :apples (ref [])
                :balls (ref [])
@@ -50,8 +52,8 @@
 (defn- apple-at-head [snake apples]
   (item-colliding-with-snake-head snake apples))
 
-(defn- is-lost? [{:keys [player level balls]}]
-  (item-colliding-with-snake-head @player [@level (tail @player) @balls]))
+(defn- is-lost? [{:keys [player level balls ai]}]
+  (item-colliding-with-snake-head @player [@level (tail @player) @balls @ai]))
 
 (defn- is-won? [{:keys [player level mode]}]
   (and
@@ -66,9 +68,10 @@
   (if (is-won? state) :won
       (when (is-lost? state) :lost)))
 
-(defn- move-and-eval-game [{:keys [mode player balls level] :as state}]
+(defn- move-and-eval-game [{:keys [mode player balls level ai] :as state}]
   (when (#{:eating :escaping} @mode)
-    (alter balls bounce-all [@player @level])
+    (alter ai walk state)
+    (alter balls bounce-all [@player @level @ai])
     (alter player move)
     (when-let [new-state (eval-won-or-lost state)]
       (ref-set mode new-state))))

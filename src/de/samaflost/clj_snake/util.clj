@@ -1,5 +1,6 @@
 (ns de.samaflost.clj-snake.util
-  (:require [de.samaflost.clj-snake.config :refer [board-size]]))
+  (:require [de.samaflost.clj-snake.collision-detection :refer :all]
+            [de.samaflost.clj-snake.config :refer [board-size]]))
 
 (defn distinct-location
   "Returns a lazy sequence of coll with elements with duplicate :location removed."
@@ -26,3 +27,8 @@
    either of which is given as a vector."
   [location direction]
   (vec (apply map + [location direction])))
+
+(defn no-collisions
+  "Returns item if item doesn't collide with places-taken or nil."
+  [places-taken item]
+  (when-not (collide? item places-taken) item))

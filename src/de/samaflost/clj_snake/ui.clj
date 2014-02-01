@@ -59,7 +59,7 @@
       (.setColor Color/MAGENTA)
       (.drawString number x y))))
 
-(defn- create-panel [mode level snake apples balls count-down]
+(defn- create-panel [mode level ai snake apples balls count-down]
   (proxy [JPanel] []
     (getPreferredSize []
       (Dimension. (* (:width board-size) pixel-per-point)
@@ -68,7 +68,7 @@
       (proxy-super paintComponent g)
       (if (= @mode :starting)
         (paint-count-down g @count-down)
-        (dorun (map (partial paint g) (flatten [@snake @apples @balls]))))
+        (dorun (map (partial paint g) (flatten [@snake @apples @balls @ai]))))
       (paint g @level))))
 
 (defn- create-escape-panel [time-left-to-escape]
@@ -132,11 +132,11 @@
                 (restart-or-exit start-over
                                  (ask-for-restart frame "Game Over!" "Try again?")))))))
 
-(defn create-ui [{:keys [level player apples score mode
+(defn create-ui [{:keys [level ai player apples score mode
                          time-left-to-escape balls count-down]}
                  start-over]
   (let [frame (JFrame. "clj-snake")
-        game-panel (doto (create-panel mode level player apples balls count-down)
+        game-panel (doto (create-panel mode level ai player apples balls count-down)
                      (.setFocusable true)
                      (.addKeyListener (create-cursor-listener player)))
         score-label (JLabel. "0")
