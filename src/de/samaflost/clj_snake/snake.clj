@@ -1,6 +1,7 @@
 (ns de.samaflost.clj-snake.snake
   (:import (java.awt Color))
-  (:require [de.samaflost.clj-snake.config :refer [board-size]]))
+  (:require [de.samaflost.clj-snake.config :refer [board-size]]
+            [de.samaflost.clj-snake.util :as u]))
 
 ;;; snake creation, movement and slicing
 
@@ -9,7 +10,7 @@
   {:up [0 -1] :down [0 1] :left [-1 0] :right [1 0]})
 
 (defn- new-head [snake]
-  (vec (apply map + [(first (:body snake)) (get dirs (:direction snake))])))
+  (u/next-location (first (:body snake)) (dirs (:direction snake))))
 
 (defn- is-perpendicular? [dir1 dir2]
   (= 0 (reduce + (map * (dirs dir1) (dirs dir2)))))

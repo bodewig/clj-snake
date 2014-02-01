@@ -1,7 +1,8 @@
 (ns de.samaflost.clj-snake.apple
   (:import (java.awt Color))
-  (:require [de.samaflost.clj-snake.config :refer [board-size number-of-apples]]
-            [de.samaflost.clj-snake.collision-detection :refer :all]))
+  (:require [de.samaflost.clj-snake.config :refer [number-of-apples]]
+            [de.samaflost.clj-snake.collision-detection :refer :all]
+            [de.samaflost.clj-snake.util :as u]))
 
 ;;; generation and aging of apples
 
@@ -9,13 +10,11 @@
 
 (defn- random-apple []
   (let [min-init-nutrition (int (/ initial-nutrition 3))]
-    {
-     :location [(inc (rand-int (- (:width board-size) 2)))
-                (inc (rand-int (- (:height board-size) 2)))]
-     :color Color/RED
-     :remaining-nutrition (+ (rand-int (- initial-nutrition min-init-nutrition))
-                             min-init-nutrition)
-     :type :apple}))
+    (assoc (u/randomly-located-thing)
+      :color Color/RED
+      :remaining-nutrition (+ (rand-int (- initial-nutrition min-init-nutrition))
+                              min-init-nutrition)
+      :type :apple)))
 
 (defn- age-apple [apple]
   (let [new-nutrition (dec (:remaining-nutrition apple))]
@@ -31,7 +30,7 @@
             (some (partial collide? apple) places-taken))]
     (vec (take number-of-apples
                (remove place-is-taken?
-                       (distinct (repeatedly random-apple)))))))
+                       (u/distinct-location (repeatedly random-apple)))))))
 
 (defn remove-apple
   "Removes the given apple"
