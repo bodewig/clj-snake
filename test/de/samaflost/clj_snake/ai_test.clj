@@ -4,12 +4,18 @@
             [de.samaflost.clj-snake.ai :refer :all]))
 
 (deftest random-direction-choice
-  (testing "the expected three directions are present"
+  (testing "the expected three directions are present when snake has a tail"
     (is (every? #{:left :right :up}
-                (choose-directions {:strategy :random :direction :up} nil)))
-    (is (every? (set (choose-directions {:strategy :random :direction :up} nil))
+                (choose-directions {:strategy :random :direction :up
+                                    :body [1 2]} nil)))
+    (is (every? (set (choose-directions {:strategy :random :direction :up
+                                         :body [1 2]} nil))
                 [:left :right :up]))
-    (is (= 3 (count (choose-directions {:strategy :random :direction :up} nil))))))
+    (is (= 3 (count (choose-directions {:strategy :random :direction :up
+                                        :body [1 2]} nil)))))
+  (testing "but all directions are possible if there is a lone head"
+    (is (= 4 (count (choose-directions {:strategy :random :direction :up
+                                        :body [1]} nil))))))
 
 (deftest clockwise-direction-choice
   (testing "the expected four directions are present"
@@ -158,20 +164,6 @@
                                                 {:location [3 0]}])})))))
   (testing "returns random choice if there are no apples"
     (is (= 3 (count (choose-directions {:direction :right
-                                        :body [[2 2]]
+                                        :body [[2 2] [1 2]]
                                         :strategy :greedy}
                                        {:apples (ref [])}))))))
-
-                  
-(deftest aggressive-direction-choice
-  (testing "tries to reach player"
-    (is (= :up (first (choose-directions {:direction :right
-                                          :body [[2 2]]
-                                          :strategy :aggressive}
-                                         {:player
-                                          (ref {:body [[3 0] [2 0]]})}))))
-    (is (= :right (second (choose-directions {:direction :right
-                                              :body [[2 2]]
-                                              :strategy :aggressive}
-                                             {:player
-                                              (ref {:body [[3 0] [2 0]]})}))))))

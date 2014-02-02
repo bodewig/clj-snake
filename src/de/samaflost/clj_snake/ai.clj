@@ -9,15 +9,17 @@
    Returns a seq of possible directions with decreasing preference."
   (fn [snake game-state] (:strategy snake)))
 
-(defn- acceptable-directions [from-direction]
-  (concat (filter (partial s/is-perpendicular? from-direction)
-                  (remove #{:stand} (keys s/dirs)))
-          (vector from-direction)))
+(defn- acceptable-directions [{:keys [body direction] :as snake}]
+  (if (> (count body) 1)
+    (concat (filter (partial s/is-perpendicular? direction)
+                    (remove #{:stand} (keys s/dirs)))
+            (vector direction))
+    (remove #{:stand} (keys s/dirs))))
 
 ;; 25% chance of changing directions
-(defmethod choose-directions :random [{:keys [direction]} _]
+(defmethod choose-directions :random [{:keys [direction] :as snake} _]
   (distinct
-   (shuffle (concat (acceptable-directions direction)
+   (shuffle (concat (acceptable-directions snake)
                     (repeat 3 direction)))))
 
 (defn- distance-squared [head item]
@@ -30,17 +32,17 @@
 (defn- location-of-head-if-snake-moved-to [snake direction]
   {:location (s/new-head (assoc snake :direction direction)) :direction direction})
 
-(defn- try-to-reach [{:keys [direction] :as snake} target]
+(defn- try-to-reach [snake target]
   (sort-by (comp (partial distance-squared target)
                  (partial location-of-head-if-snake-moved-to snake))
-           (acceptable-directions direction)))
+           (acceptable-directions snake)))
 
 ;; tries to reach the closest apple
 (defmethod choose-directions :greedy
-  [{:keys [direction] :as snake} {:keys [apples]}]
+  [snake {:keys [apples]}]
   (if-let [apple (closest (s/head snake) @apples)]
     (try-to-reach snake apple)
-    (shuffle (acceptable-directions direction))))
+    (shuffle (acceptable-directions snake))))
 
 (defn pick-direction
   "Pick the prefered direction who's road is clear"
