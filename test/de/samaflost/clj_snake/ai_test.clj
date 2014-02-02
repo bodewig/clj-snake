@@ -167,3 +167,16 @@
                                         :body [[2 2] [1 2]]
                                         :strategy :greedy}
                                        {:apples (ref [])}))))))
+
+(deftest aggressive-direction-choice
+  (testing "tries to reach player"
+    (is (= :up (first (choose-directions {:direction :right
+                                          :body [[2 2]]
+                                          :strategy :aggressive}
+                                         {:player
+                                          (ref {:body [[3 0] [2 0]]})}))))
+    (is (= :right (second (choose-directions {:direction :right
+                                              :body [[2 2]]
+                                              :strategy :aggressive}
+                                             {:player
+                                              (ref {:body [[3 0] [2 0]]})}))))))

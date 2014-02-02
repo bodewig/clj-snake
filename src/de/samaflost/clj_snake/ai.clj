@@ -44,6 +44,11 @@
     (try-to-reach snake apple)
     (shuffle (acceptable-directions snake))))
 
+;; tries to reach the player's snake's head
+(defmethod choose-directions :aggressive
+  [snake {:keys [player]}]
+  (try-to-reach snake (s/head (s/move @player))))
+
 (defn pick-direction
   "Pick the prefered direction who's road is clear"
   [snake {:keys [level player balls] :as game-state}]
@@ -51,7 +56,6 @@
     (some #(when (u/no-collisions places-taken %) (:direction %))
           (map (partial location-of-head-if-snake-moved-to snake)
                (choose-directions snake game-state)))))
-
 
 (defn walk
   "Moving the AI controlled snake"
