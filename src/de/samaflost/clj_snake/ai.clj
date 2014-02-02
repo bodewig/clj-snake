@@ -36,5 +36,6 @@
          :direction direction)))))
 
 ;;; test support strategies only
+(defmethod choose-directions :stubborn [{:keys [direction]} _] [direction])
 (defmethod choose-directions :clockwise [{:keys [direction]} _]
   [:up :right :down :left])

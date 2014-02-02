@@ -6,7 +6,7 @@
 
 (defn base-state []
   {:player (ref {:body [[4 4] [4 5] [4 6]] :direction :left :to-grow 1})
-   :ai (ref {:body [[9 2] [9 1]] :direction :right :to-grow 0})
+   :ai (ref {:body [[9 2] [9 1]] :direction :right :to-grow 0 :strategy :stubborn})
    :level (ref {:walls [[1 1]] :type :level :top-door :closed})
    :apples (ref [{:location [7 7] :remaining-nutrition 100}])
    :balls (ref [{:location [8 8]}])
@@ -131,3 +131,11 @@
     (is (= :starting (deref (:mode (leaving-and-return
                                     (assoc (base-state)
                                       :player (ref {:body []})))))))))
+(defn move-ai-and-return [s]
+  (dosync (move-ai s))
+  s)
+
+(deftest moving-ai
+  (testing "it moves"
+    (is (= {:body [[10 2] [9 2]] :direction :right :to-grow 0 :strategy :stubborn}
+           (deref (:ai (move-ai-and-return (base-state))))))))

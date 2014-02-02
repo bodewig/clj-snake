@@ -68,9 +68,15 @@
   (if (is-won? state) :won
       (when (is-lost? state) :lost)))
 
+(defn move-ai [{:keys [ai apples] :as state}]
+  (alter ai walk state)
+  (when-let [eaten-apple (apple-at-head @ai @apples)]
+    (alter ai consume eaten-apple)
+    (alter apples remove-apple eaten-apple)))
+
 (defn- move-and-eval-game [{:keys [mode player balls level ai] :as state}]
   (when (#{:eating :escaping} @mode)
-    (alter ai walk state)
+    (move-ai state)
     (alter balls bounce-all [@player @level @ai])
     (alter player move)
     (when-let [new-state (eval-won-or-lost state)]
