@@ -29,12 +29,12 @@
 
 (defn move
   "Moves and potentially grows a snake"
-  [snake]
-  (let [body (:body snake)
-        to-grow (:to-grow snake)]
-    (assoc snake :body (cons (new-head snake)
-                             (if (pos? to-grow) body (butlast body)))
-          :to-grow (if (> to-grow 1) (dec to-grow) 0))))
+  [{:keys [body to-grow] :as snake}]
+  (let [h (new-head snake)
+        b (if (pos? to-grow) body (butlast body))]
+    (assoc snake
+      :body (if-not (= h (first b)) (cons h b) b)
+      :to-grow (if (> to-grow 1) (dec to-grow) 0))))
 
 (defn change-direction
   "changes the direction of the snake to new-dir if new-dir is

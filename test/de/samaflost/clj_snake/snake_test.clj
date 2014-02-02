@@ -28,6 +28,17 @@
       (is (= (list [26 49]) (:body (move (assoc (new-snake true)
                                            :direction :right
                                            :to-grow 0)))))))
+    (testing "standing still"
+      (is (= (list [25 49]) (:body (move (assoc (new-snake true)
+                                           :direction :stand
+                                           :to-grow 0)))))
+      (is (= (list [25 48]) (:body (move (assoc (new-snake true)
+                                           :body [[25 48] [25 49]]
+                                           :direction :stand
+                                           :to-grow 0)))))
+      (is (= (list [25 49]) (:body (move (assoc (new-snake true)
+                                           :direction :stand
+                                           :to-grow 1))))))
     (testing "with growing"
       (is (= (list [25 48] [25 49]) (:body (move (new-snake true)))))
       (is (= (list [25 50] [25 49])

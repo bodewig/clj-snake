@@ -56,10 +56,8 @@
   [{:keys [direction] :as snake} game-state]
   (if-let [new-direction (pick-direction snake game-state)]
     (s/move (assoc snake :direction new-direction))
-    (letfn [(chop-head [sn] (assoc sn :body (:body (s/tail sn))))]
-      (chop-head
-       (assoc (s/move (assoc snake :direction :stand))
-         :direction direction)))))
+    (assoc (s/move (assoc snake :direction :stand))
+      :direction direction)))
 
 ;;; test support strategies only
 (defmethod choose-directions :stubborn [{:keys [direction]} _] [direction])

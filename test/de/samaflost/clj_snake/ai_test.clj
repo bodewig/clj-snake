@@ -76,7 +76,62 @@
                   :direction :left
                   :to-grow 0
                   :strategy :clockwise}
-                 (gt/base-state))))))
+                 (gt/base-state)))))
+    (testing "keeps head when stuck"
+      ;;    /======
+      ;; ====o-
+      ;;WWWWWWWWWWWWW
+      (is (= {:direction :left
+              :body [[10 2]]
+              :to-grow 0
+              :strategy :clockwise}
+             (walk {:body [[10 2] [11 2]]
+                    :to-grow 0
+                    :direction :left
+                    :strategy :clockwise}
+                   (assoc (gt/base-state)
+                     :player
+                     (ref
+                      {:body [[8 2] [9 2] [9 1] [10 1] [11 1]]})
+                     :level
+                     (ref
+                      {:walls [[8 3] [9 3] [10 3] [11 3]]
+                       :type :level}))))))
+    (testing "and turns around when unstuck through shrinking"
+      ;;    /======
+      ;; ====o
+      ;;WWWWWWWWWWWWW
+      (is (= {:direction :right
+              :body [[11 2]]
+              :to-grow 0
+              :strategy :clockwise}
+             (walk {:body [[10 2]]
+                    :to-grow 0
+                    :direction :left
+                    :strategy :clockwise}
+                   (assoc (gt/base-state)
+                     :player
+                     (ref
+                      {:body [[8 2] [9 2] [9 1] [10 1] [11 1]]})
+                     :level
+                     (ref
+                      {:walls [[8 3] [9 3] [10 3] [11 3]]
+                       :type :level})))))
+      ;; trapped in corner
+      (is (= {:body [[1 2]], :direction :down, :to-grow 0, 
+              :strategy :clockwise}
+             (walk {:body [[1 1]]
+                    :to-grow 0
+                    :direction :up
+                    :strategy :clockwise}
+                   (assoc (gt/base-state)
+                     :player
+                     (ref
+                      {:body [[3 1] [2 1] [2 2] [2 3]]})
+                     :level
+                     (ref
+                      {:walls [[0 3] [0 2] [0 1] [0 0] [1 0] [2 0] [3 0]]
+                       :type :level})))))))
 
 (deftest closest-test
   (testing "closest picks closest apple"
@@ -108,3 +163,15 @@
                                        {:apples (ref [])}))))))
 
                   
+(deftest aggressive-direction-choice
+  (testing "tries to reach player"
+    (is (= :up (first (choose-directions {:direction :right
+                                          :body [[2 2]]
+                                          :strategy :aggressive}
+                                         {:player
+                                          (ref {:body [[3 0] [2 0]]})}))))
+    (is (= :right (second (choose-directions {:direction :right
+                                              :body [[2 2]]
+                                              :strategy :aggressive}
+                                             {:player
+                                              (ref {:body [[3 0] [2 0]]})}))))))
