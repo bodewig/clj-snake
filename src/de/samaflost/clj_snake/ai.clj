@@ -53,9 +53,9 @@
   [snake {:keys [player]}]
   (try-to-reach snake (s/head (s/move @player))))
 
-(def quarter-of-plane ^:private
-  (reduce + (map #(* % %) [(/ (:width board-size) 2)
-                           (/ (:height board-size) 2)])))
+(def range-of-vision ^:private
+  (reduce + (map #(* % %) [(/ (:width board-size) 2.5)
+                           (/ (:height board-size) 2.5)])))
 
 ;; walks randomly unless it sees an apple or the player within its
 ;; limited sight - I know snakes smell rather than see
@@ -63,7 +63,7 @@
   [snake {:keys [apples player]}]
   (let [target (closest (s/head snake) (conj @apples (s/head (s/move @player))))
         dist (distance-squared target (s/head snake))]
-    (if (< dist quarter-of-plane)
+    (if (< dist range-of-vision)
       (try-to-reach snake target)
       (biased-random-direction snake))))
 
