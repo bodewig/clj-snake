@@ -77,3 +77,34 @@
                   :to-grow 0
                   :strategy :clockwise}
                  (gt/base-state))))))
+
+(deftest closest-apple-test
+  (testing "closest apple picks closest"
+    (is (= {:location [0 0]}
+           (closest-apple {:location [1 1]}
+                          [{:location [3 1]} {:location [0 0]}
+                           {:location [1 3]}])))))
+
+(deftest greedy-direction-choice
+  (testing "tries to reach closest apple"
+    (is (= :up (first (choose-directions {:direction :right
+                                          :body [[2 2]]
+                                          :strategy :greedy}
+                                         {:apples
+                                          (ref
+                                           [{:location [0 0]}
+                                            {:location [3 0]}])}))))
+    (is (= :right (second (choose-directions {:direction :right
+                                              :body [[2 2]]
+                                              :strategy :greedy}
+                                             {:apples
+                                              (ref
+                                               [{:location [0 0]}
+                                                {:location [3 0]}])})))))
+  (testing "returns random choice if there are no apples"
+    (is (= 3 (count (choose-directions {:direction :right
+                                        :body [[2 2]]
+                                        :strategy :greedy}
+                                       {:apples (ref [])}))))))
+
+                  
