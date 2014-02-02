@@ -6,4 +6,4 @@
 (def pixel-per-point 10)
 (def number-of-apples 5)
 (def ms-to-escape 15000)
-(def ai-strategy :random)
+(def ai-strategy :short-sighted)

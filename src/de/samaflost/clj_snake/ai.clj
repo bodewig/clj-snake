@@ -1,5 +1,6 @@
 (ns de.samaflost.clj-snake.ai
-  (:require [de.samaflost.clj-snake.snake :as s]
+  (:require [de.samaflost.clj-snake.config :refer [board-size]]
+            [de.samaflost.clj-snake.snake :as s]
             [de.samaflost.clj-snake.util :as u]))
 
 ;;; AI controlled snake movement
@@ -17,10 +18,13 @@
     (remove #{:stand} (keys s/dirs))))
 
 ;; 25% chance of changing directions
-(defmethod choose-directions :random [{:keys [direction] :as snake} _]
+(defn- biased-random-direction [{:keys [direction] :as snake}]
   (distinct
    (shuffle (concat (acceptable-directions snake)
                     (repeat 3 direction)))))
+
+(defmethod choose-directions :random [snake _]
+  (biased-random-direction snake))
 
 (defn- distance-squared [head item]
   (reduce + (map #(* % %) (map - (:location head) (:location item)))))
@@ -48,6 +52,20 @@
 (defmethod choose-directions :aggressive
   [snake {:keys [player]}]
   (try-to-reach snake (s/head (s/move @player))))
+
+(def quarter-of-plane ^:private
+  (reduce + (map #(* % %) [(/ (:width board-size) 2)
+                           (/ (:height board-size) 2)])))
+
+;; walks randomly unless it sees an apple or the player within its
+;; limited sight - I know snake smell rather than see
+(defmethod choose-directions :short-sighted
+  [snake {:keys [apples player]}]
+  (let [target (closest (s/head snake) (conj @apples (s/head (s/move @player))))
+        dist (distance-squared target (s/head snake))]
+    (if (< dist quarter-of-plane)
+      (try-to-reach snake target)
+      (biased-random-direction snake))))
 
 (defn pick-direction
   "Pick the prefered direction who's road is clear"
