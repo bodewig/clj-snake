@@ -4,12 +4,12 @@
             [de.samaflost.clj-snake.ai :refer :all]))
 
 (deftest random-direction-choice
-  (testing "the expected four directions are present"
+  (testing "the expected six directions are present"
     (is (every? #{:left :right :up}
                 (choose-directions {:strategy :random :direction :up} nil)))
     (is (every? (set (choose-directions {:strategy :random :direction :up} nil))
                 [:left :right :up]))
-    (is (= 4 (count (choose-directions {:strategy :random :direction :up} nil))))))
+    (is (= 6 (count (choose-directions {:strategy :random :direction :up} nil))))))
 
 (deftest clockwise-direction-choice
   (testing "the expected four directions are present"

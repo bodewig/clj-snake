@@ -9,11 +9,11 @@
    Returns a seq of possible directions with decreasing preference."
   (fn [snake game-state] (:strategy snake)))
 
-;; 50% chance of changing directions
+;; 25% chance of changing directions
 (defmethod choose-directions :random [{:keys [direction]} _]
   (shuffle (concat (filter (partial s/is-perpendicular? direction)
                            (remove #{:stand} (keys s/dirs)))
-                   [direction direction])))
+                   [direction direction direction direction])))
 
 (defn pick-direction
   "Pick the prefered direction who's road is clear"
