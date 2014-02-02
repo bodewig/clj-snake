@@ -22,4 +22,58 @@
                                 :direction :right
                                 :to-grow 0
                                 :strategy :clockwise}
-                               (gt/base-state))))))
+                               (gt/base-state)))))
+  (testing "looks for a better choice when way is blocked"
+    ;; 0 /-\
+    ;; 1 -\|
+    ;; 2 o-|
+    ;; 3 --/
+    (is (= :left (pick-direction {:body [[10 2] [11 2] [11 1] [10 1]
+                                         [10 0] [11 0] [12 0] [12 1]
+                                         [12 2] [12 3] [11 3] [10 3]]
+                                  :direction :left
+                                  :to-grow 0
+                                  :strategy :clockwise}
+                                 (gt/base-state)))))
+  (testing "returns nil if there is no way to go"
+    ;; 0 |/-\
+    ;; 1 |-\|
+    ;; 2 |o-|
+    ;; 3 \--/
+    (is (nil? (pick-direction {:body [[10 2] [11 2] [11 1] [10 1]
+                                      [10 0] [11 0] [12 0] [12 1]
+                                      [12 2] [12 3] [11 3] [10 3]
+                                      [9 3] [9 2] [9 1] [9 0]]
+                               :direction :left
+                               :to-grow 0
+                               :strategy :clockwise}
+                              (gt/base-state))))))
+
+(deftest walking
+  (testing "moves into taken direction"
+    (is (= {:direction :up :body [[10 1] [10 2]] :to-grow 0 :strategy :clockwise}
+           (walk {:body [[10 2] [10 3]]
+                  :direction :right
+                  :to-grow 0
+                  :strategy :clockwise}
+                 (gt/base-state)))))
+  (testing "just shrinks if there is no way to go"
+    ;; 0 |/-\
+    ;; 1 |-\|
+    ;; 2 |o-|
+    ;; 3 \--/
+    (is (= {:direction :left
+            :body [[10 2] [11 2] [11 1] [10 1]
+                   [10 0] [11 0] [12 0] [12 1]
+                   [12 2] [12 3] [11 3] [10 3]
+                   [9 3] [9 2] [9 1]]
+            :to-grow 0
+            :strategy :clockwise}
+           (walk {:body [[10 2] [11 2] [11 1] [10 1]
+                         [10 0] [11 0] [12 0] [12 1]
+                         [12 2] [12 3] [11 3] [10 3]
+                         [9 3] [9 2] [9 1] [9 0]]
+                  :direction :left
+                  :to-grow 0
+                  :strategy :clockwise}
+                 (gt/base-state))))))
