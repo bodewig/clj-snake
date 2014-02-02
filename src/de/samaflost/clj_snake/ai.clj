@@ -21,22 +21,25 @@
 (defn- distance-squared [head item]
   (reduce + (map #(* % %) (map - (:location head) (:location item)))))
 
-(defn closest-apple [head apples]
-  (when (seq apples)
-    (apply min-key (partial distance-squared head) apples)))
+(defn closest [head targets]
+  (when (seq targets)
+    (apply min-key (partial distance-squared head) targets)))
 
 (defn- location-of-head-if-snake-moved-to [snake direction]
   {:location (s/new-head (assoc snake :direction direction)) :direction direction})
+
+(defn- try-to-reach [snake target choices]
+  (sort-by (comp (partial distance-squared target)
+                 (partial location-of-head-if-snake-moved-to snake))
+           choices))
 
 ;; tries to reach the closest apple
 (defmethod choose-directions :greedy
   [{:keys [direction] :as snake} {:keys [apples]}]
   (let [random-choice (shuffle (concat (acceptable-direction-changes direction)
                                        (vector direction)))]
-    (if-let [apple (closest-apple (s/head snake) @apples)]
-      (sort-by (comp (partial distance-squared apple)
-                     (partial location-of-head-if-snake-moved-to snake))
-               random-choice)
+    (if-let [apple (closest (s/head snake) @apples)]
+      (try-to-reach snake apple random-choice)
       random-choice)))
 
 (defn pick-direction

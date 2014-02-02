@@ -78,10 +78,10 @@
                   :strategy :clockwise}
                  (gt/base-state))))))
 
-(deftest closest-apple-test
-  (testing "closest apple picks closest"
+(deftest closest-test
+  (testing "closest picks closest apple"
     (is (= {:location [0 0]}
-           (closest-apple {:location [1 1]}
+           (closest {:location [1 1]}
                           [{:location [3 1]} {:location [0 0]}
                            {:location [1 3]}])))))
 
