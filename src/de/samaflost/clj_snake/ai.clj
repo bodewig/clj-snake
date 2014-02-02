@@ -58,7 +58,7 @@
                            (/ (:height board-size) 2)])))
 
 ;; walks randomly unless it sees an apple or the player within its
-;; limited sight - I know snake smell rather than see
+;; limited sight - I know snakes smell rather than see
 (defmethod choose-directions :short-sighted
   [snake {:keys [apples player]}]
   (let [target (closest (s/head snake) (conj @apples (s/head (s/move @player))))
