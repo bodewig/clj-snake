@@ -172,11 +172,17 @@
   (testing "tries to reach player"
     (is (= :up (first (choose-directions {:direction :right
                                           :body [[2 2]]
+                                          :to-grow 0
                                           :strategy :aggressive}
                                          {:player
-                                          (ref {:body [[3 0] [2 0]]})}))))
+                                          (ref {:body [[2 0] [1 0]]
+                                                :direction :right
+                                                :to-grow 0})}))))
     (is (= :right (second (choose-directions {:direction :right
                                               :body [[2 2]]
+                                              :to-grow 0
                                               :strategy :aggressive}
                                              {:player
-                                              (ref {:body [[3 0] [2 0]]})}))))))
+                                              (ref {:body [[2 0] [1 0]]
+                                                    :direction :right
+                                                    :to-grow 0})}))))))
