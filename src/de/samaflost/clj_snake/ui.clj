@@ -110,18 +110,18 @@
     (keyReleased [e])
     (keyTyped [e])))
 
-(defn ask-for-restart [frame title message]
-  (=
-   (JOptionPane/showConfirmDialog frame message title JOptionPane/YES_NO_OPTION)
-   JOptionPane/YES_OPTION))
+(defn lost-callback [frame made-high-score?]
+  (JOptionPane/showMessageDialog frame
+                                 (if made-high-score?
+                                   "You made the highscore list."
+                                   "You need to practice more.")
+                                 "Game over"
+                                 JOptionPane/INFORMATION_MESSAGE))
 
 (defn repaint [game-panel score-label escape-panel score]
   (.repaint game-panel)
   (.repaint escape-panel)
   (.setText score-label (str @score)))
-
-(defn- restart-or-exit [start-over restart?]
-  (if restart? (start-over) (System/exit 0)))
 
 (defn- create-repaint-timer [start-over
                              frame game-panel score-label escape-panel
@@ -129,10 +129,7 @@
   (Timer. (/ ms-per-turn 2)
           (proxy [ActionListener] []
             (actionPerformed [event]
-              (repaint game-panel score-label escape-panel score)
-              (when (= @mode :lost)
-                (restart-or-exit start-over
-                                 (ask-for-restart frame "Game Over!" "Try again?")))))))
+              (repaint game-panel score-label escape-panel score)))))
 
 (defn- create-menu-bar [frame start-over]
   (doto (JMenuBar.)
@@ -180,4 +177,5 @@
       (.setJMenuBar (create-menu-bar frame start-over))
       (.pack)
       (.setVisible true))
-    (.start repaint-timer)))
+    (.start repaint-timer)
+    (partial lost-callback frame)))

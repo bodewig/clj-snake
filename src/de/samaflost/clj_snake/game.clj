@@ -1,6 +1,7 @@
 (ns de.samaflost.clj-snake.game
   (:import (java.util.concurrent Executors TimeUnit))
-  (:use [de.samaflost.clj-snake ai apple ball collision-detection config level snake ui])
+  (:use [de.samaflost.clj-snake ai apple ball collision-detection config
+         highscore level snake ui])
   (:gen-class))
 
 ;;; Holds all game state and functions pertinent to the game's flow
@@ -137,7 +138,15 @@
   (when (neg? (alter count-down - ms-per-turn))
     (ref-set mode :eating)))
 
-(defn- one-turn [{:keys [mode] :as state}]
+(defn lost-actions
+  "stuff done when the game is lost.
+   Not to be called from within a transaction."
+  [{:keys [mode score]} lost-callback]
+  (lost-callback
+   (add-score @score (.. System (getProperties) (get "user.name"))))
+  (dosync (ref-set mode :initial)))
+
+(defn- one-turn [{:keys [mode] :as state} lost-callback]
   (dosync
    (move-and-eval-game state)
    (case @mode
@@ -146,7 +155,9 @@
      :won (won-actions state)
      :starting (starting-actions state)
      :leaving (leaving-actions state)
-     nil)))
+     nil))
+  ;; outside of the dosync as lost-callback may be blocking
+  (when (= @mode :lost) (lost-actions state lost-callback)))
 
 (defn- start-over [{:keys [score] :as state}]
   (dosync
@@ -156,8 +167,8 @@
 
 (defn- create-board []
   (let [state (create-game-state)
-        ui (create-ui state #(start-over state))]
-    (.scheduleAtFixedRate scheduler #(one-turn state)
+        lost-callback (create-ui state #(start-over state))]
+    (.scheduleAtFixedRate scheduler #(one-turn state lost-callback)
                           ms-per-turn ms-per-turn
                           TimeUnit/MILLISECONDS)
     (schedule-closing-doors state)))
