@@ -8,17 +8,6 @@
     (test)
     (dosync (ref-set highscore-list []))))
 
-(deftest minimal-score
-  (testing "empty score"
-    (is (= 0 (min-score))))
-  (testing "with one score"
-    (add-score 42 "foo")
-    (is (= 42 (min-score))))
-  (testing "with many scores"
-    (add-score 12 "bar")
-    (add-score 99 "baz")
-    (is (= 12 (min-score)))))
-
 (deftest adding
   (testing "list is sorted by score desc"
     (add-score 42 "a")
@@ -38,5 +27,7 @@
     (add-score 18 "f2")
     (is (= [192 99 94 66 51 42 33 19 18 12] (map :score @highscore-list)))
     (is (= ["d2" "c" "e" "c2" "e2" "a" "f" "b2" "f2" "b"]
-           (map :name @highscore-list)))))
-
+           (map :name @highscore-list))))
+  (testing "add-score's returns whether a score has been added"
+    (is (add-score 22 "foo"))
+    (is (not (add-score 2 "bar")))))
