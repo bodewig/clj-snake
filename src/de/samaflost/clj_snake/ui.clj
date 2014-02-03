@@ -3,7 +3,9 @@
                         JMenu JMenuBar JMenuItem
                         KeyStroke SwingConstants Timer)
            (java.awt Color Dimension BorderLayout Font)
-           (java.awt.event KeyListener KeyEvent ActionListener ActionEvent))
+           (java.awt.event KeyListener KeyEvent
+                           ActionListener ActionEvent
+                           WindowAdapter))
   (:require [de.samaflost.clj-snake.config
              :refer [board-size ms-per-turn pixel-per-point ms-to-escape]]
         [de.samaflost.clj-snake.level :refer [bottom-door top-door door-is-open?]]
@@ -174,6 +176,9 @@
               (.add score-label BorderLayout/EAST)
               (.add escape-panel BorderLayout/SOUTH))
             BorderLayout/NORTH)
+      (.addWindowListener (proxy [WindowAdapter] []
+                            (windowClosing [event] 
+                              (System/exit 0))))
       (.setJMenuBar (create-menu-bar frame start-over))
       (.pack)
       (.setVisible true))
