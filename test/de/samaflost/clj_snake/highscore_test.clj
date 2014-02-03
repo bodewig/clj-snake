@@ -4,6 +4,7 @@
 
 (use-fixtures :each
   (fn [test]
+    (reset! persistent-scores false)
     (dosync (ref-set highscore-list []))
     (test)
     (dosync (ref-set highscore-list []))))
