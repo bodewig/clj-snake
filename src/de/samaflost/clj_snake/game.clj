@@ -43,7 +43,8 @@
                :score (ref 0)
                :count-down (ref 0)
                :mode (ref :starting)}]
-    (state-for-new-level state (create-level))))
+    (assoc (state-for-new-level state (create-level))
+      :mode (ref :initial))))
 
 (defn- item-colliding-with-snake-head [snake items]
   (let [snake-head (head snake)]

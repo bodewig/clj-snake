@@ -1,8 +1,9 @@
 (ns de.samaflost.clj-snake.ui
   (:import (javax.swing JPanel JFrame JOptionPane JLabel
-                        SwingConstants Timer)
+                        JMenu JMenuBar JMenuItem
+                        KeyStroke SwingConstants Timer)
            (java.awt Color Dimension BorderLayout Font)
-           (java.awt.event KeyListener KeyEvent ActionListener))
+           (java.awt.event KeyListener KeyEvent ActionListener ActionEvent))
   (:require [de.samaflost.clj-snake.config
              :refer [board-size ms-per-turn pixel-per-point ms-to-escape]]
         [de.samaflost.clj-snake.level :refer [bottom-door top-door door-is-open?]]
@@ -66,10 +67,11 @@
                   (* (:height board-size)  pixel-per-point)))
     (paintComponent [g]
       (proxy-super paintComponent g)
-      (if (= @mode :starting)
-        (paint-count-down g @count-down)
-        (dorun (map (partial paint g) (flatten [@snake @apples @balls @ai]))))
-      (paint g @level))))
+      (when-not (= @mode :initial)
+        (if (= @mode :starting)
+          (paint-count-down g @count-down)
+          (dorun (map (partial paint g) (flatten [@snake @apples @balls @ai]))))
+        (paint g @level)))))
 
 (defn- create-escape-panel [time-left-to-escape]
   (let [width (* (:width board-size) pixel-per-point)
@@ -132,6 +134,26 @@
                 (restart-or-exit start-over
                                  (ask-for-restart frame "Game Over!" "Try again?")))))))
 
+(defn- create-menu-bar [frame start-over]
+  (doto (JMenuBar.)
+    (.add (doto (JMenu. "Snake")
+            (.add (doto (JMenuItem. "New Game" KeyEvent/VK_N)
+                    (.setAccelerator
+                     (KeyStroke/getKeyStroke
+                      KeyEvent/VK_N ActionEvent/CTRL_MASK))
+                    (.addActionListener
+                     (proxy [ActionListener] []
+                       (actionPerformed [event] (start-over))))))
+            (.addSeparator)
+            (.add (doto (JMenuItem. "Quit" KeyEvent/VK_Q)
+                    (.setAccelerator
+                     (KeyStroke/getKeyStroke
+                      KeyEvent/VK_Q ActionEvent/CTRL_MASK))
+                    (.addActionListener
+                     (proxy [ActionListener] []
+                       (actionPerformed [event] (System/exit 0))))))))))
+                    
+
 (defn create-ui [{:keys [level ai player apples score mode
                          time-left-to-escape balls count-down]}
                  start-over]
@@ -155,6 +177,7 @@
               (.add score-label BorderLayout/EAST)
               (.add escape-panel BorderLayout/SOUTH))
             BorderLayout/NORTH)
+      (.setJMenuBar (create-menu-bar frame start-over))
       (.pack)
       (.setVisible true))
     (.start repaint-timer)))
