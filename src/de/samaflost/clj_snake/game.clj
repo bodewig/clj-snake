@@ -170,8 +170,7 @@
         lost-callback (create-ui state #(start-over state))]
     (.scheduleAtFixedRate scheduler #(one-turn state lost-callback)
                           ms-per-turn ms-per-turn
-                          TimeUnit/MILLISECONDS)
-    (schedule-closing-doors state)))
+                          TimeUnit/MILLISECONDS)))
 
 (defn -main
   [& args]
