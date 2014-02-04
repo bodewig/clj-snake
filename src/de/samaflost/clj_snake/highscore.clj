@@ -22,11 +22,10 @@
   [score-list new-score]
   (take 10 (sort-by (comp - :score) (conj score-list new-score))))
 
-(defn- persist-scores []
+(defn- persist-scores [score-list]
   (io/make-parents highscore-file)
-  (println "persisting")
   (with-open [w (io/writer highscore-file)]
-    (json/write @highscore-list w)))
+    (json/write score-list w)))
 
 (defn add-score
   "Adds a score to the list"
@@ -35,5 +34,17 @@
         added? (dosync
                 (some (partial = new-score)
                       (alter highscore-list insert-score new-score)))]
-    (when (and @persistent-scores added?) (persist-scores))
+    (when (and @persistent-scores added?) (persist-scores @highscore-list))
     added?))
+
+(def ^:private table-columns [:score :name :date])
+(def ^:private table-headings {:score "Score", :name "Name", :date "Date"})
+
+(defn get-score-table
+  "Returns the current highscore list as a list of an array f arrays
+   for the values and an array of column titles - this format is
+   suitable for a JTable constructor."
+  []
+  (letfn [(apply-column-selectors [row] (map #(% row) table-columns))]
+    (list (to-array-2d (map apply-column-selectors @highscore-list))
+          (to-array (apply-column-selectors table-headings)))))

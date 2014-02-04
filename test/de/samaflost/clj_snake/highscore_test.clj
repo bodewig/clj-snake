@@ -32,3 +32,16 @@
   (testing "add-score's returns whether a score has been added"
     (is (add-score 22 "foo"))
     (is (not (add-score 2 "bar")))))
+
+(deftest get-table-test
+  (testing "expected headlines"
+    (is (= ["Score" "Name" "Date"] (seq (second (get-score-table))))))
+  (testing "body content"
+    (is (= 0 (alength (first (get-score-table)))))
+    (add-score 42 "a1")
+    (add-score 12 "b1")
+    (add-score 99 "c1")
+    (is (= 3 (alength (first (get-score-table)))))
+    (is (= 3 (alength (aget (first (get-score-table)) 0))))
+    (is (= 99 (aget (aget (first (get-score-table)) 0) 0)))
+    (is (= "b1" (aget (aget (first (get-score-table)) 2) 1)))))
