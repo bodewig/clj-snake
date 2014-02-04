@@ -1,17 +1,14 @@
 (ns de.samaflost.clj-snake.ui
   (:import (javax.swing JPanel JFrame JOptionPane JLabel
-                        JMenu JMenuBar JMenuItem JTable JScrollPane
+                        JMenu JMenuBar JMenuItem
                         KeyStroke SwingConstants Timer)
-           (javax.swing.table DefaultTableCellRenderer)
            (java.awt Color Dimension BorderLayout Font)
            (java.awt.event KeyListener KeyEvent
                            ActionListener ActionEvent
-                           WindowAdapter)
-           (java.util Date)
-           (java.text DateFormat))
+                           WindowAdapter))
   (:require [de.samaflost.clj-snake.config
              :refer [snake-configuration ms-per-turn pixel-per-point ms-to-escape]]
-        [de.samaflost.clj-snake.highscore :refer [get-score-table]]
+        [de.samaflost.clj-snake.highscore-ui :refer [create-highscore-menu]]
         [de.samaflost.clj-snake.level :refer [bottom-door top-door door-is-open?]]
         [de.samaflost.clj-snake.snake :refer [change-direction]]))
 
@@ -143,27 +140,6 @@
             (actionPerformed [event]
               (repaint game-panel score-label escape-panel score)))))
 
-(def ^:private date-format (DateFormat/getDateTimeInstance))
-
-(defn- show-highscore-list [frame]
-  (let [table-model (get-score-table)
-        table (JTable. (first table-model) (second table-model))]
-    (.setCellRenderer
-     (.getColumn table (.getColumnName table 0))
-     (doto (DefaultTableCellRenderer.)
-       (.setHorizontalAlignment JLabel/RIGHT)))
-    (.setCellRenderer
-     (.getColumn table (.getColumnName table 2))
-     (proxy [DefaultTableCellRenderer] []
-       (setValue [value]
-         (proxy-super setValue (.format date-format (Date. value))))))
-    (doto table
-      (.setFillsViewportHeight true)
-      (.setShowGrid false))
-    (JOptionPane/showMessageDialog frame (JScrollPane. table)
-                                   "Highscore List"
-                                   JOptionPane/INFORMATION_MESSAGE)))
-
 (defn- create-menu-bar [frame start-over]
   (doto (JMenuBar.)
     (.add (doto (JMenu. "Snake")
@@ -175,10 +151,7 @@
                      (proxy [ActionListener] []
                        (actionPerformed [event] (start-over))))))
             (.addSeparator)
-            (.add (doto (JMenuItem. "Show Highscore List")
-                    (.addActionListener
-                     (proxy [ActionListener] []
-                       (actionPerformed [event] (show-highscore-list frame))))))
+            (.add (create-highscore-menu frame))
             (.addSeparator)
             (.add (doto (JMenuItem. "Quit" KeyEvent/VK_Q)
                     (.setAccelerator

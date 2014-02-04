@@ -37,14 +37,3 @@
     (when (and @persistent-scores added?) (persist-scores @highscore-list))
     added?))
 
-(def ^:private table-columns [:score :name :date])
-(def ^:private table-headings {:score "Score", :name "Name", :date "Date"})
-
-(defn get-score-table
-  "Returns the current highscore list as a list of an array f arrays
-   for the values and an array of column titles - this format is
-   suitable for a JTable constructor."
-  []
-  (letfn [(apply-column-selectors [row] (map #(% row) table-columns))]
-    (list (to-array-2d (map apply-column-selectors @highscore-list))
-          (to-array (apply-column-selectors table-headings)))))
