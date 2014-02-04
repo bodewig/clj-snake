@@ -26,7 +26,7 @@
    :to-grow 4
    :color (if player? Color/GREEN Color/BLUE)
    :type :snake
-   :strategy (:ai-strategy @snake-configuration)
+   :strategy (keyword (:ai-strategy @snake-configuration))
    })
 
 (defn move
