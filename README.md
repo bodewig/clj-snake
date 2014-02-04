@@ -1,30 +1,42 @@
 clj-snake
 =========
 
-Yet another simple snake game written in Clojure
+This game tries to clone the game play of KDE 3's KSnake game which
+was dropped from KDE 4 but is missed badly by at least one person
+close to me.
 
-This is more a project to practice Clojure for myself than something I
-expect to be useful for anybody else.  It stands on the shoulders of
-the many Snake games published before it and is heavily influenced by
-Stuart Halloway's Snake [example Snake
+The Game
+--------
+
+You control the green "snake" using the cursor keys.  Your snake
+enters the game through a door at the bottom while a game controlled
+snake enters through the top.
+
+Your goal is to eat the "apples" that have been scattered around the
+level (red or yellow circles) before they go bad or the other snake
+eats them.  Don't run into walls, the other snake or your own tail and
+make sure the bouncing ball doesn't hit your snake's head.
+
+If you eat the last apple the top door opens up again for a limited
+time and you can use it to escape the level.  Once escaped you'll find
+your snake in the next level - if I ever implement mutliple levels,
+that is, for now you'll repeat the same level over and over again.
+
+Should all apples rot away before they have been eaten or should the
+last apple be eaten by the game's snake fresh apples will be created.
+
+History
+-------
+
+The main goal of this tiny project has shifted a little over time.
+
+I started this project to practice Clojure more than to really get a
+working game but at one point it was good enough to be actually fun to
+play for a while.
+
+The initial code base stands on the shoulders of the many Snake games
+published before it and is heavily influenced by Stuart Halloway's
+Snake [example Snake
 program](https://github.com/stuarthalloway/programming-clojure/blob/master/src/examples/snake.clj).
-
-The far end goal (beyond practicing) for myself is creating a
-replacement for the KSnake game that was dropped from KDE 4 and is
-missed badly by a person close to me.
-
-So beyond the simple Snake game it should provide
-
-* apples can rot
-* an exit opens once all apples have been consumed, the game is only
-  won once the player's snake leaves the board via this exit
-* new apples are added when all apples have been eaten and time runs
-  out
-* a second game-controlled snake with some limited AI that tries to
-  steal apples and even hit the player's snake
-* a ball bouncing around, getting hit by it is deadly for the player's
-  snake
-* walls inside the board that need to be run around
-* several levels
-
-
+It still shares the threading approach with Stuart's game but pretty
+much everything else has been rewritten.
