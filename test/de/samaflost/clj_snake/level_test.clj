@@ -1,23 +1,28 @@
 (ns de.samaflost.clj-snake.level-test
   (:require [clojure.test :refer :all]
-            [de.samaflost.clj-snake.config :refer [board-size]]
+            [de.samaflost.clj-snake.config :refer [snake-configuration]]
             [de.samaflost.clj-snake.level :refer :all]))
 
-(def half-width (/ (:width board-size) 2))
+(def half-width (/ (get-in @snake-configuration [:board-size :width]) 2))
 
 (deftest creation-of-level
   (testing "frame-walls"
     (is (some #{[0 0]} (:walls (create-level))))
-    (is (some #{[0 (dec (:height board-size))]} (:walls (create-level))))
+    (is (some #{[0 (dec (get-in @snake-configuration [:board-size :height]))]}
+              (:walls (create-level))))
     (is (some #{[0 10]} (:walls (create-level))))
     (is (some #{[10 0]} (:walls (create-level))))
-    (is (some #{[(dec (:width board-size)) 0]} (:walls (create-level))))
-    (is (some #{[(dec (:width board-size)) 10]} (:walls (create-level))))
-    (is (some #{[(dec (:width board-size)) (dec (:height board-size))]}
+    (is (some #{[(dec (get-in @snake-configuration [:board-size :width])) 0]}
+              (:walls (create-level))))
+    (is (some #{[(dec (get-in @snake-configuration [:board-size :width])) 10]}
+              (:walls (create-level))))
+    (is (some #{[(dec (get-in @snake-configuration [:board-size :width]))
+                 (dec (get-in @snake-configuration [:board-size :height]))]}
               (:walls (create-level))))
     (is (not (some #{[10 10]} (:walls (create-level)))))
     (is (not (some #{[half-width 0]} (:walls (create-level)))))
-    (is (not (some #{[half-width (dec (:height board-size))]}
+    (is (not (some #{[half-width
+                      (dec (get-in @snake-configuration [:board-size :height]))]}
                    (:walls (create-level))))))
   (testing "doors"
     (is :open (:bottom-door (create-level)))))

@@ -1,6 +1,6 @@
 (ns de.samaflost.clj-snake.snake
   (:import (java.awt Color))
-  (:require [de.samaflost.clj-snake.config :refer [board-size ai-strategy]]
+  (:require [de.samaflost.clj-snake.config :refer [snake-configuration]]
             [de.samaflost.clj-snake.util :as u]))
 
 ;;; snake creation, movement and slicing
@@ -18,13 +18,15 @@
   "Creates a new snake that will start at the bottom for a player or
   at the top for the program-controlled snake"
   [player?]
-  {:body (list [(/ (:width board-size) 2)
-                (if player? (dec (:height board-size)) 0)])
+  {:body (list [(/ (get-in @snake-configuration [:board-size :width]) 2)
+                (if player?
+                  (dec (get-in @snake-configuration [:board-size :height]))
+                  0)])
    :direction (if player? :up :down)
    :to-grow 4
    :color (if player? Color/GREEN Color/BLUE)
    :type :snake
-   :strategy ai-strategy
+   :strategy (:ai-strategy @snake-configuration)
    })
 
 (defn move

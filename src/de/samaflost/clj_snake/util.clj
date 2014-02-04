@@ -1,6 +1,6 @@
 (ns de.samaflost.clj-snake.util
   (:require [de.samaflost.clj-snake.collision-detection :refer :all]
-            [de.samaflost.clj-snake.config :refer [board-size]]))
+            [de.samaflost.clj-snake.config :refer [snake-configuration]]))
 
 (defn distinct-location
   "Returns a lazy sequence of coll with elements with duplicate :location removed."
@@ -19,8 +19,9 @@
 (defn randomly-located-thing
   "Returns a map with a random :location inside the bounds of the level"
   []
-  {:location [(inc (rand-int (- (:width board-size) 2)))
-              (inc (rand-int (- (:height board-size) 2)))]})
+  {:location [(inc (rand-int (- (get-in @snake-configuration [:board-size :width]) 2)))
+              (inc (rand-int
+                    (- (get-in @snake-configuration [:board-size :height]) 2)))]})
 
 (defn next-location
   "Returns location of moving from one location into a given direction

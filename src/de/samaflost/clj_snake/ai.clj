@@ -1,5 +1,5 @@
 (ns de.samaflost.clj-snake.ai
-  (:require [de.samaflost.clj-snake.config :refer [board-size]]
+  (:require [de.samaflost.clj-snake.config :refer [snake-configuration]]
             [de.samaflost.clj-snake.snake :as s]
             [de.samaflost.clj-snake.util :as u]))
 
@@ -54,8 +54,9 @@
   (try-to-reach snake (s/head (s/move @player))))
 
 (def range-of-vision ^:private
-  (reduce + (map #(* % %) [(/ (:width board-size) 2.5)
-                           (/ (:height board-size) 2.5)])))
+  (reduce + (map #(* % %)
+                 [(/ (get-in @snake-configuration [:board-size :width]) 2.5)
+                  (/ (get-in @snake-configuration [:board-size :width]) 2.5)])))
 
 ;; walks randomly unless it sees an apple or the player within its
 ;; limited sight - I know snakes smell rather than see

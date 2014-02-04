@@ -1,15 +1,16 @@
 (ns de.samaflost.clj-snake.snake-test
   (:import (java.awt Color))
   (:require [clojure.test :refer :all]
-            [de.samaflost.clj-snake.config :refer [board-size]]
+            [de.samaflost.clj-snake.config :refer [snake-configuration]]
             [de.samaflost.clj-snake.snake :refer :all]))
 
-(def half-width (/ (:width board-size) 2))
+(def half-width (/ (get-in @snake-configuration [:board-size :width]) 2))
 
 (deftest snake-creation
   (testing "Creating a new Snake"
     (testing "for the player"
-      (is (= (list [half-width (dec (:height board-size))])
+      (is (= (list [half-width
+                    (dec (get-in @snake-configuration [:board-size :height]))])
              (:body (new-snake true))))
       (is (= :up (:direction (new-snake true))))
       (is (= Color/GREEN (:color (new-snake true)))))
@@ -21,22 +22,26 @@
 (deftest moving-the-snake
   (testing "moving"
     (testing "without growing"
-      (is (= (list [half-width (dec (dec (:height board-size)))])
+      (is (= (list [half-width
+                    (dec (dec (get-in @snake-configuration [:board-size :height])))])
              (:body (move (assoc (new-snake true) :to-grow 0)))))
-      (is (= (list [half-width (:height board-size)])
+      (is (= (list [half-width (get-in @snake-configuration [:board-size :height])])
              (:body (move (assoc (new-snake true)
                             :direction :down
                             :to-grow 0)))))
-      (is (= (list [(dec half-width) (dec (:height board-size))])
+      (is (= (list [(dec half-width)
+                    (dec (get-in @snake-configuration [:board-size :height]))])
              (:body (move (assoc (new-snake true)
                             :direction :left
                             :to-grow 0)))))
-      (is (= (list [(inc half-width) (dec (:height board-size))])
+      (is (= (list [(inc half-width)
+                    (dec (get-in @snake-configuration [:board-size :height]))])
              (:body (move (assoc (new-snake true)
                             :direction :right
                             :to-grow 0)))))))
     (testing "standing still"
-      (is (= (list [half-width (dec (:height board-size))])
+      (is (= (list [half-width
+                    (dec (get-in @snake-configuration [:board-size :height]))])
              (:body (move (assoc (new-snake true)
                             :direction :stand
                             :to-grow 0)))))
@@ -45,22 +50,30 @@
                             :body [[25 48] [25 49]]
                             :direction :stand
                             :to-grow 0)))))
-      (is (= (list [half-width (dec (:height board-size))])
+      (is (= (list [half-width
+                    (dec (get-in @snake-configuration [:board-size :height]))])
              (:body (move (assoc (new-snake true)
                             :direction :stand
                             :to-grow 1))))))
     (testing "with growing"
-      (is (= (list [half-width (dec (dec (:height board-size)))]
-                   [half-width (dec (:height board-size))])
+      (is (= (list [half-width
+                    (dec (dec (get-in @snake-configuration [:board-size :height])))]
+                   [half-width
+                    (dec (get-in @snake-configuration [:board-size :height]))])
              (:body (move (new-snake true)))))
-      (is (= (list [half-width (:height board-size)]
-                   [half-width (dec (:height board-size))])
+      (is (= (list [half-width (get-in @snake-configuration [:board-size :height])]
+                   [half-width
+                    (dec (get-in @snake-configuration [:board-size :height]))])
              (:body (move (assoc (new-snake true) :direction :down)))))
-      (is (= (list [(dec half-width) (dec (:height board-size))]
-                   [half-width (dec (:height board-size))])
+      (is (= (list [(dec half-width)
+                    (dec (get-in @snake-configuration [:board-size :height]))]
+                   [half-width
+                    (dec (get-in @snake-configuration [:board-size :height]))])
              (:body (move (assoc (new-snake true) :direction :left)))))
-      (is (= (list [(inc half-width) (dec (:height board-size))]
-                   [half-width (dec (:height board-size))])
+      (is (= (list [(inc half-width)
+                    (dec (get-in @snake-configuration [:board-size :height]))]
+                   [half-width
+                    (dec (get-in @snake-configuration [:board-size :height]))])
              (:body (move (assoc (new-snake true) :direction :right))))))
     (testing "changes in to-grow"
       (is (= 3 (:to-grow (move (new-snake true)))))

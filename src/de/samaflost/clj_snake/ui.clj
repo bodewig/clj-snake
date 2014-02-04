@@ -10,7 +10,7 @@
            (java.util Date)
            (java.text DateFormat))
   (:require [de.samaflost.clj-snake.config
-             :refer [board-size ms-per-turn pixel-per-point ms-to-escape]]
+             :refer [snake-configuration ms-per-turn pixel-per-point ms-to-escape]]
         [de.samaflost.clj-snake.highscore :refer [get-score-table]]
         [de.samaflost.clj-snake.level :refer [bottom-door top-door door-is-open?]]
         [de.samaflost.clj-snake.snake :refer [change-direction]]))
@@ -60,8 +60,12 @@
 (defn- paint-count-down [g count-down]
   (let [number (str (inc (int (/ count-down 1000))))
         bounds (.. g (getFont) (getStringBounds number (.getFontRenderContext g)))
-        x (int (/ (- (* (:width board-size) pixel-per-point) (.getWidth bounds)) 2))
-        y (int (/ (+ (* (:height board-size) pixel-per-point) (.getHeight bounds)) 2))]
+        x (int (/ (- (* (get-in @snake-configuration [:board-size :width])
+                        pixel-per-point)
+                     (.getWidth bounds)) 2))
+        y (int (/ (+ (* (get-in @snake-configuration [:board-size :height])
+                        pixel-per-point)
+                     (.getHeight bounds)) 2))]
     (doto g
       (.setColor Color/MAGENTA)
       (.drawString number x y))))
@@ -69,8 +73,10 @@
 (defn- create-panel [mode level ai snake apples balls count-down]
   (proxy [JPanel] []
     (getPreferredSize []
-      (Dimension. (* (:width board-size) pixel-per-point)
-                  (* (:height board-size)  pixel-per-point)))
+      (Dimension. (* (get-in @snake-configuration [:board-size :width])
+                     pixel-per-point)
+                  (* (get-in @snake-configuration [:board-size :height])
+                     pixel-per-point)))
     (paintComponent [g]
       (proxy-super paintComponent g)
       (when-not (= @mode :initial)
@@ -80,7 +86,7 @@
         (paint g @level)))))
 
 (defn- create-escape-panel [time-left-to-escape]
-  (let [width (* (:width board-size) pixel-per-point)
+  (let [width (* (get-in @snake-configuration [:board-size :width]) pixel-per-point)
         height (* 2  pixel-per-point)]
   (proxy [JPanel] []
     (getPreferredSize []

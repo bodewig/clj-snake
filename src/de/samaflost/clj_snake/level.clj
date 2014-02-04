@@ -1,10 +1,10 @@
 (ns de.samaflost.clj-snake.level
-  (:require [de.samaflost.clj-snake.config :refer [board-size]]))
+  (:require [de.samaflost.clj-snake.config :refer [snake-configuration]]))
 
 ;;; level holds the walls and doors
 
 (defn- door [row]
-  [(/ (:width board-size) 2) row])
+  [(/ (get-in @snake-configuration [:board-size :width]) 2) row])
 
 (def top-door
   ^{:doc "the door at the top, the program-controlled snake enters
@@ -15,11 +15,11 @@
 (def bottom-door
   ^{:doc "the door at the bottom, the player-controlled snake enters
   here."}
-  (door (dec (:height board-size))))
+  (door (dec (get-in @snake-configuration [:board-size :height]))))
 
 (defn- framing []
-  (let [max-height (:height board-size)
-        max-width (:width board-size)]
+  (let [max-height (get-in @snake-configuration [:board-size :height])
+        max-width (get-in @snake-configuration [:board-size :width])]
     (remove #{bottom-door top-door}
             (concat (map (partial vector 0) (range max-height))
                     (map (partial vector (dec max-width)) (range max-height))
@@ -30,7 +30,8 @@
     (set
      (concat (framing)
              ;; a single extra-wall to make things more interesting
-             (list [(/ (:width board-size) 2) (/ (:height board-size) 2)]))))
+             (list [(/ (get-in @snake-configuration [:board-size :width]) 2)
+                    (/ (get-in @snake-configuration [:board-size :height]) 2)]))))
 
 (defn- key-for-door [door]
   (if (= bottom-door door) :bottom-door :top-door))
