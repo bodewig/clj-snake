@@ -4,8 +4,7 @@
                         KeyStroke SwingConstants Timer)
            (java.awt Color Dimension BorderLayout Font)
            (java.awt.event KeyListener KeyEvent
-                           ActionListener ActionEvent
-                           WindowAdapter))
+                           ActionListener ActionEvent))
   (:require [de.samaflost.clj-snake.config
              :refer [snake-configuration ms-per-turn pixel-per-point ms-to-escape]]
         [de.samaflost.clj-snake.highscore-ui :refer [create-highscore-menu]]
@@ -185,10 +184,8 @@
               (.add score-label BorderLayout/EAST)
               (.add escape-panel BorderLayout/SOUTH))
             BorderLayout/NORTH)
-      (.addWindowListener (proxy [WindowAdapter] []
-                            (windowClosing [event] 
-                              (System/exit 0))))
       (.setJMenuBar (create-menu-bar frame start-over))
+      (.setDefaultCloseOperation JFrame/EXIT_ON_CLOSE)
       (.pack)
       (.setVisible true))
     (.start repaint-timer)
