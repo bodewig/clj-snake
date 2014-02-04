@@ -1,6 +1,7 @@
 (ns de.samaflost.clj-snake.game-test
   (:import (java.awt Color))
   (:require [clojure.test :refer :all]
+            [de.samaflost.clj-snake.config :refer :all]
             [de.samaflost.clj-snake.game :refer :all]
             [de.samaflost.clj-snake.level :refer [top-door]]))
 
@@ -61,7 +62,7 @@
   (letfn [(esc-base-state [] (assoc (base-state) :mode (ref :escaping)))]
     (testing "counting down of time-left-to-escape - may lead to eating"
       (is (= 900 (deref (:time-left-to-escape (escaping-only-and-return (esc-base-state))))))
-      (is (= 15000 (deref (:time-left-to-escape
+      (is (= ms-to-escape (deref (:time-left-to-escape
                            (escaping-only-and-return (assoc (esc-base-state)
                                                        :time-left-to-escape (ref 99)))))))
       (is (= :eating (deref (:mode
