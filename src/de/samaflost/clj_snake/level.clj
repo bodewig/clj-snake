@@ -36,13 +36,18 @@
 (defn- key-for-door [door]
   (if (= bottom-door door) :bottom-door :top-door))
 
-(defn create-level
-  "Create the walls of the level and open doors"
-  []
+(defn- create-level [number]
   {:walls (initial-walls)
    :top-door :closed
    :bottom-door :open
+   :number number
+   :balls (inc number)
    :type :level})
+
+(defn create-initial-level
+  "Create the walls of the first level and open doors"
+  []
+  (create-level 0))
 
 (defn door-is-open?
   "is the given door open in the given level?"
@@ -56,5 +61,5 @@
 
 (defn next-level
   "Returns the level after the given one"
-  [level]
-  (create-level))
+  [previous-level]
+  (create-level (inc (:number previous-level))))

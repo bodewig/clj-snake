@@ -28,7 +28,7 @@
      (ref-set (:ai game-state) (new-snake false))
      (ref-set (:level game-state) level)
      (ref-set (:apples game-state) apples)
-     (ref-set (:balls game-state) (create-balls 1 [level apples]))
+     (ref-set (:balls game-state) (create-balls (:balls level) [level apples]))
      (ref-set (:time-left-to-escape game-state) ms-to-escape)
      (ref-set (:mode game-state) :starting)
      (ref-set (:count-down game-state) 3000))
@@ -44,7 +44,7 @@
                :score (ref 0)
                :count-down (ref 0)
                :mode (ref :starting)}]
-    (assoc (state-for-new-level state (create-level))
+    (assoc (state-for-new-level state (create-initial-level))
       :mode (ref :initial))))
 
 (defn- item-colliding-with-snake-head [snake items]
@@ -161,7 +161,7 @@
 
 (defn- start-over [{:keys [score] :as state}]
   (dosync
-   (state-for-new-level state (create-level))
+   (state-for-new-level state (create-initial-level))
    (ref-set score 0))
   (schedule-closing-doors state))
 

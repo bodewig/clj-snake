@@ -8,7 +8,7 @@
 (defn base-state []
   {:player (ref {:body [[4 4] [4 5] [4 6]] :direction :left :to-grow 1})
    :ai (ref {:body [[9 2] [9 1]] :direction :right :to-grow 0 :strategy :stubborn})
-   :level (ref {:walls [[1 1]] :type :level :top-door :closed})
+   :level (ref {:walls [[1 1]] :type :level :top-door :closed :number 0})
    :apples (ref [{:location [7 7] :remaining-nutrition 100}])
    :balls (ref [{:location [8 8]}])
    :time-left-to-escape (ref 1000)

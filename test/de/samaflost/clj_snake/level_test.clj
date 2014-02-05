@@ -7,25 +7,25 @@
 
 (deftest creation-of-level
   (testing "frame-walls"
-    (is (some #{[0 0]} (:walls (create-level))))
+    (is (some #{[0 0]} (:walls (create-initial-level))))
     (is (some #{[0 (dec (get-in @snake-configuration [:board-size :height]))]}
-              (:walls (create-level))))
-    (is (some #{[0 10]} (:walls (create-level))))
-    (is (some #{[10 0]} (:walls (create-level))))
+              (:walls (create-initial-level))))
+    (is (some #{[0 10]} (:walls (create-initial-level))))
+    (is (some #{[10 0]} (:walls (create-initial-level))))
     (is (some #{[(dec (get-in @snake-configuration [:board-size :width])) 0]}
-              (:walls (create-level))))
+              (:walls (create-initial-level))))
     (is (some #{[(dec (get-in @snake-configuration [:board-size :width])) 10]}
-              (:walls (create-level))))
+              (:walls (create-initial-level))))
     (is (some #{[(dec (get-in @snake-configuration [:board-size :width]))
                  (dec (get-in @snake-configuration [:board-size :height]))]}
-              (:walls (create-level))))
-    (is (not (some #{[10 10]} (:walls (create-level)))))
-    (is (not (some #{[half-width 0]} (:walls (create-level)))))
+              (:walls (create-initial-level))))
+    (is (not (some #{[10 10]} (:walls (create-initial-level)))))
+    (is (not (some #{[half-width 0]} (:walls (create-initial-level)))))
     (is (not (some #{[half-width
                       (dec (get-in @snake-configuration [:board-size :height]))]}
-                   (:walls (create-level))))))
+                   (:walls (create-initial-level))))))
   (testing "doors"
-    (is :open (:bottom-door (create-level)))))
+    (is :open (:bottom-door (create-initial-level)))))
 
 (deftest is-open?
   (testing "bottom-door"
