@@ -7,6 +7,7 @@
                            ActionListener ActionEvent))
   (:require [de.samaflost.clj-snake.config
              :refer [snake-configuration ms-per-turn pixel-per-point ms-to-escape]]
+        [de.samaflost.clj-snake.config-ui :refer [create-settings-menu]]
         [de.samaflost.clj-snake.highscore-ui :refer [create-highscore-menu]]
         [de.samaflost.clj-snake.level :refer [bottom-door top-door door-is-open?]]
         [de.samaflost.clj-snake.snake :refer [change-direction]]))
@@ -151,6 +152,7 @@
                        (actionPerformed [event] (start-over))))))
             (.addSeparator)
             (.add (create-highscore-menu frame))
+            (.add (create-settings-menu frame))
             (.addSeparator)
             (.add (doto (JMenuItem. "Quit" KeyEvent/VK_Q)
                     (.setAccelerator
