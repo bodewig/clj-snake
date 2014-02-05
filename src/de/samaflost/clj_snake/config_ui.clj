@@ -1,15 +1,15 @@
 (ns de.samaflost.clj-snake.config-ui
-  (:require [de.samaflost.clj-snake.config :refer :all])
+  (:require [de.samaflost.clj-snake.config :refer :all]
+            [de.samaflost.clj-snake.util :refer [t]])
   (:import (javax.swing Box BoxLayout JDialog JLabel
                         JButton JTextField JComboBox JMenuItem)
            (java.awt GridLayout)
            (java.awt.event ActionListener)))
 
 (def ^:private strategy-names
-  {"random" "random"
-   "greedy" "greedy"
-   "aggressive" "aggressive"
-   "short-sighted" "short sighted"})
+  (apply array-map
+         (mapcat #(vector (name %) (t %))
+                 [:random :greedy :aggressive :short-sighted])))
 
 (defn- as-strategy-key [strategy-input]
   (let [value (.getSelectedItem strategy-input)]
@@ -20,7 +20,7 @@
     {:width (grab-value width-input) :height (grab-value height-input)}))
 
 (defn- show-settings-dialog [frame]
-  (let [dialog (JDialog. frame "Settings")
+  (let [dialog (JDialog. frame (t :title/settings))
         width-input (JTextField. (str (get-in @snake-configuration
                                               [:board-size :width])))
         height-input (JTextField. (str (get-in @snake-configuration
@@ -32,7 +32,7 @@
                                (:ai-strategy @snake-configuration))))]
     (doto dialog
       (.setLayout (GridLayout. 3 2))
-      (.add (JLabel. "Board size:"))
+      (.add (JLabel. (t :label/board-size)))
       (.add (doto (Box/createHorizontalBox)
               (.add (Box/createHorizontalStrut 5))
               (.add width-input)
@@ -41,7 +41,7 @@
               (.add (Box/createHorizontalStrut 3))
               (.add height-input)
               (.add (Box/createHorizontalStrut 2))))
-      (.add (JLabel. "Game Snake type:"))
+      (.add (JLabel. (t :label/ai)))
       (.add (doto (Box/createHorizontalBox)
               (.add (Box/createHorizontalStrut 5))
               (.add strategy-input)))
@@ -58,7 +58,7 @@
               (.add (Box/createHorizontalGlue))))
       (.add (doto (Box/createHorizontalBox)
               (.add (Box/createHorizontalGlue))
-              (.add (doto (JButton. "Cancel")
+              (.add (doto (JButton. (t :cancel))
                       (.addActionListener 
                        (proxy [ActionListener] []
                          (actionPerformed [event]
@@ -71,7 +71,7 @@
   "Returns a JMenuItem with an ActionListener that shows the settings
   dialog."
   [frame]
-  (doto (JMenuItem. "Settings")
+  (doto (JMenuItem. (t :menu/settings))
     (.addActionListener
      (proxy [ActionListener] []
        (actionPerformed [event] (show-settings-dialog frame))))))

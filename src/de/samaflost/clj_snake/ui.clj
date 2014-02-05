@@ -10,7 +10,8 @@
         [de.samaflost.clj-snake.config-ui :refer [create-settings-menu]]
         [de.samaflost.clj-snake.highscore-ui :refer [create-highscore-menu]]
         [de.samaflost.clj-snake.level :refer [bottom-door top-door door-is-open?]]
-        [de.samaflost.clj-snake.snake :refer [change-direction]]))
+        [de.samaflost.clj-snake.snake :refer [change-direction]]
+        [de.samaflost.clj-snake.util :refer [t]]))
 
 ;;; The Swing UI of the game
 
@@ -120,12 +121,11 @@
     (keyTyped [e])))
 
 (defn lost-callback [frame made-high-score?]
-  (JOptionPane/showMessageDialog frame
-                                 (if made-high-score?
-                                   "You made the highscore list."
-                                   "You need to practice more.")
-                                 "Game over"
-                                 JOptionPane/INFORMATION_MESSAGE))
+  (JOptionPane/showMessageDialog
+   frame
+   (t (if made-high-score? :lost/highscore :lost/no-highscore))
+   (t :game-over)
+   JOptionPane/INFORMATION_MESSAGE))
 
 (defn repaint [game-panel score-label escape-panel score]
   (.repaint game-panel)
@@ -143,7 +143,7 @@
 (defn- create-menu-bar [frame start-over]
   (doto (JMenuBar.)
     (.add (doto (JMenu. "Snake")
-            (.add (doto (JMenuItem. "New Game" KeyEvent/VK_N)
+            (.add (doto (JMenuItem. (t :menu/new) KeyEvent/VK_N)
                     (.setAccelerator
                      (KeyStroke/getKeyStroke
                       KeyEvent/VK_N ActionEvent/CTRL_MASK))
@@ -154,7 +154,7 @@
             (.add (create-highscore-menu frame))
             (.add (create-settings-menu frame))
             (.addSeparator)
-            (.add (doto (JMenuItem. "Quit" KeyEvent/VK_Q)
+            (.add (doto (JMenuItem. (t :menu/quit) KeyEvent/VK_Q)
                     (.setAccelerator
                      (KeyStroke/getKeyStroke
                       KeyEvent/VK_Q ActionEvent/CTRL_MASK))

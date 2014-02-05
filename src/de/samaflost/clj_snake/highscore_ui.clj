@@ -1,5 +1,6 @@
 (ns de.samaflost.clj-snake.highscore-ui
-  (:require [de.samaflost.clj-snake.highscore :refer [highscore-list]])
+  (:require [de.samaflost.clj-snake.highscore :refer [highscore-list]]
+            [de.samaflost.clj-snake.util :refer [t]])
   (:import (javax.swing JOptionPane JLabel
                         JMenuItem JTable JScrollPane)
            (javax.swing.table DefaultTableCellRenderer)
@@ -8,7 +9,6 @@
            (java.text DateFormat)))
 
 (def ^:private table-columns [:score :name :date])
-(def ^:private table-headings {:score "Score", :name "Name", :date "Date"})
 (def ^:private date-format (DateFormat/getDateTimeInstance))
 
 (defn get-score-table
@@ -18,7 +18,7 @@
   []
   (letfn [(apply-column-selectors [row] (map #(% row) table-columns))]
     (list (to-array-2d (map apply-column-selectors @highscore-list))
-          (to-array (apply-column-selectors table-headings)))))
+          (to-array (map t table-columns)))))
 
 (defn- show-highscore-list [frame]
   (let [table-model (get-score-table)
@@ -36,13 +36,13 @@
       (.setFillsViewportHeight true)
       (.setShowGrid false))
     (JOptionPane/showMessageDialog frame (JScrollPane. table)
-                                   "Highscore List"
+                                   (t :title/highscore)
                                    JOptionPane/INFORMATION_MESSAGE)))
 
 (defn create-highscore-menu
   "Returns a JMenuItem with an ActionListener that shows the highscore list."
   [frame]
-  (doto (JMenuItem. "Show Highscore List")
+  (doto (JMenuItem. (t :menu/highscore))
     (.addActionListener
      (proxy [ActionListener] []
        (actionPerformed [event] (show-highscore-list frame))))))
