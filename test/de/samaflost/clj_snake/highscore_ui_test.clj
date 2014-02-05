@@ -9,7 +9,7 @@
 
 (deftest get-table-test
   (testing "expected headlines"
-    (is (= ["Score" "Name" "Date"] (seq (second (get-score-table))))))
+    (is (= 3 (count (seq (second (get-score-table)))))))
   (testing "body content"
     (is (= 0 (alength (first (get-score-table)))))
     (add-score 42 "a1")
