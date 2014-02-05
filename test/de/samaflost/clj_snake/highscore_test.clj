@@ -2,12 +2,15 @@
   (:require [clojure.test :refer :all]
             [de.samaflost.clj-snake.highscore :refer :all]))
 
-(use-fixtures :each
-  (fn [test]
-    (reset! persistent-scores false)
-    (dosync (ref-set highscore-list []))
-    (test)
-    (dosync (ref-set highscore-list []))))
+(defn- reset [_] [])
+
+(defn with-empty-highscore-list [test]
+  (reset! persistent-scores false)
+  (swap! highscore-list reset)
+  (test)
+  (swap! highscore-list reset))
+
+(use-fixtures :each with-empty-highscore-list)
 
 (deftest adding
   (testing "list is sorted by score desc"

@@ -16,7 +16,7 @@
       (json/read r :key-fn keyword))
     []))
 
-(def highscore-list (ref (load-list)))
+(def highscore-list (atom (load-list)))
 
 (defn- insert-score
   [score-list new-score]
@@ -31,9 +31,8 @@
   "Adds a score to the list"
   [score name]
   (let [new-score {:score score :name name :date (.getTime (Date.))}
-        added? (dosync
-                (some (partial = new-score)
-                      (alter highscore-list insert-score new-score)))]
+        added? (some (partial = new-score)
+                     (swap! highscore-list insert-score new-score))]
     (when (and @persistent-scores added?) (persist-scores @highscore-list))
     added?))
 

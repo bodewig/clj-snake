@@ -1,14 +1,11 @@
 (ns de.samaflost.clj-snake.highscore-ui-test
   (:require [clojure.test :refer :all]
             [de.samaflost.clj-snake.highscore :refer :all]
+            [de.samaflost.clj-snake.highscore-test
+             :refer [with-empty-highscore-list]]
             [de.samaflost.clj-snake.highscore-ui :refer :all]))
 
-(use-fixtures :each
-  (fn [test]
-    (reset! persistent-scores false)
-    (dosync (ref-set highscore-list []))
-    (test)
-    (dosync (ref-set highscore-list []))))
+(use-fixtures :each with-empty-highscore-list)
 
 (deftest get-table-test
   (testing "expected headlines"

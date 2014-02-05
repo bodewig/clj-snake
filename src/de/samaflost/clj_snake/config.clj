@@ -21,7 +21,9 @@
       default-config)))
 
 (def ^{:doc "the configurable values of the game"}
-  snake-configuration (ref (load-config)))
+  snake-configuration (atom (load-config)))
+
+(defn- set-config [_ new-config] new-config)
 
 (defn set-and-save-configuration
   "Persists and activates a configuration"
@@ -29,5 +31,5 @@
   (io/make-parents config-file)
   (with-open [w (io/writer config-file)]
     (json/write config w))
-  (dosync (ref-set snake-configuration config)))
+  (swap! snake-configuration set-config config))
 
