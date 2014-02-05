@@ -5,6 +5,9 @@ This game tries to clone the game play of KDE 3's KSnake game which
 was dropped from KDE 4 but is missed badly by at least one person
 close to me.
 
+To be honest I don't expect this to be useful or even get looked at
+outside of my family :-)
+
 The Game
 --------
 
@@ -19,8 +22,7 @@ make sure the bouncing ball doesn't hit your snake's head.
 
 If you eat the last apple the top door opens up again for a limited
 time and you can use it to escape the level.  Once escaped you'll find
-your snake in the next level - if I ever implement mutliple levels,
-that is, for now you'll repeat the same level over and over again.
+your snake in the next level.
 
 Should all apples rot away before they have been eaten or should the
 last apple be eaten by the game's snake fresh apples will be created.

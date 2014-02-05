@@ -1,10 +1,10 @@
 (ns de.samaflost.clj-snake.level
-  (:require [de.samaflost.clj-snake.config :refer [snake-configuration]]))
+  (:require [de.samaflost.clj-snake.levels :refer :all]))
 
 ;;; level holds the walls and doors
 
 (defn- door [row]
-  [(/ (get-in @snake-configuration [:board-size :width]) 2) row])
+  [(/ max-width 2) row])
 
 (def top-door
   ^{:doc "the door at the top, the program-controlled snake enters
@@ -15,33 +15,27 @@
 (def bottom-door
   ^{:doc "the door at the bottom, the player-controlled snake enters
   here."}
-  (door (dec (get-in @snake-configuration [:board-size :height]))))
+  (door (dec max-height)))
 
-(defn- framing []
-  (let [max-height (get-in @snake-configuration [:board-size :height])
-        max-width (get-in @snake-configuration [:board-size :width])]
-    (remove #{bottom-door top-door}
-            (concat (map (partial vector 0) (range max-height))
-                    (map (partial vector (dec max-width)) (range max-height))
-                    (map #(vector % 0) (range max-width))
-                    (map #(vector % (dec max-height)) (range max-width))))))
+(def framing
+  (remove #{bottom-door top-door}
+          (concat (map (partial vector 0) (range max-height))
+                  (map (partial vector (dec max-width)) (range max-height))
+                  (map #(vector % 0) (range max-width))
+                  (map #(vector % (dec max-height)) (range max-width)))))
 
-(defn- initial-walls []
-    (set
-     (concat (framing)
-             ;; a single extra-wall to make things more interesting
-             (list [(/ (get-in @snake-configuration [:board-size :width]) 2)
-                    (/ (get-in @snake-configuration [:board-size :height]) 2)]))))
+(defn- walls [number]
+  (set (concat framing (internal-walls number))))
 
 (defn- key-for-door [door]
   (if (= bottom-door door) :bottom-door :top-door))
 
 (defn- create-level [number]
-  {:walls (initial-walls)
+  {:walls (walls number)
    :top-door :closed
    :bottom-door :open
    :number number
-   :balls (inc number)
+   :balls (inc (quot number number-of-levels))
    :type :level})
 
 (defn create-initial-level
