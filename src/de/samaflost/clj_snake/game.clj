@@ -141,10 +141,12 @@
 (defn lost-actions
   "stuff done when the game is lost.
    Not to be called from within a transaction."
-  [{:keys [mode score]} lost-callback]
+  [{:keys [mode score time-left-to-escape]} lost-callback]
   (lost-callback
    (add-score @score (.. System (getProperties) (get "user.name"))))
-  (dosync (ref-set mode :initial)))
+  (dosync
+   (ref-set mode :initial)
+   (ref-set time-left-to-escape ms-to-escape)))
 
 (defn- one-turn [{:keys [mode] :as state} lost-callback]
   (dosync
