@@ -1,4 +1,4 @@
-(defproject clj-snake "0.1.0-SNAPSHOT"
+(defproject clj-snake "0.2.0-SNAPSHOT"
   :description "Yet Another Snake Game"
   :url "https://github.com/bodewig/clj-snake"
   :license {:name "Apache License Version 2.0"
