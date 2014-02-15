@@ -11,11 +11,14 @@
   (fn [snake game-state] (:strategy snake)))
 
 (defn- acceptable-directions [{:keys [body direction] :as snake}]
-  (if (> (count body) 1)
-    (concat (filter (partial s/is-perpendicular? direction)
-                    (remove #{:stand} (keys s/dirs)))
-            (vector direction))
-    (remove #{:stand} (keys s/dirs))))
+  (let [real-directions (remove #{:stand} (keys s/dirs))]
+    (if (> (count body) 1)
+      (concat (filter (partial s/is-perpendicular? direction)
+                      real-directions)
+              (vector direction))
+      (if (pos? (second (:location (s/head snake))))
+        real-directions
+        (remove #{:up} real-directions)))))
 
 ;; 25% chance of changing directions
 (defn- biased-random-direction [{:keys [direction] :as snake}]

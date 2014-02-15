@@ -7,15 +7,24 @@
   (testing "the expected three directions are present when snake has a tail"
     (is (every? #{:left :right :up}
                 (choose-directions {:strategy :random :direction :up
-                                    :body [1 2]} nil)))
+                                    :body [[1 2] [1 3]]} nil)))
     (is (every? (set (choose-directions {:strategy :random :direction :up
-                                         :body [1 2]} nil))
+                                         :body [[1 2] [1 3]]} nil))
                 [:left :right :up]))
     (is (= 3 (count (choose-directions {:strategy :random :direction :up
-                                        :body [1 2]} nil)))))
+                                        :body [[1 2] [1 3]]} nil)))))
   (testing "but all directions are possible if there is a lone head"
     (is (= 4 (count (choose-directions {:strategy :random :direction :up
-                                        :body [1]} nil))))))
+                                        :body [[1 2]]} nil)))))
+  (testing "unless the lone head is inside the door"
+    (is (every? (set (choose-directions {:strategy :random :direction :up
+                                         :body [[1 0]]} nil))
+                [:left :right :down]))
+    (is (every? #{:left :right :down}
+                (choose-directions {:strategy :random :direction :down
+                                    :body [[1 0]]} nil)))
+    (is (= 3 (count (choose-directions {:strategy :random :direction :down
+                                        :body [[1 0]]} nil))))))
 
 (deftest clockwise-direction-choice
   (testing "the expected four directions are present"
