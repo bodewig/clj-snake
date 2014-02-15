@@ -9,7 +9,7 @@
 
 (defn- random-ball []
   (assoc (u/randomly-located-thing)
-    :color Color/ORANGE
+    :color Color/BLACK
     :direction (rand-int 4)
     :type :ball))
 
