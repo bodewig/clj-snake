@@ -15,9 +15,10 @@
   (let [value (.getSelectedItem strategy-input)]
     (key (some #(when (= (val %) value) %) strategy-names))))
 
+(defn- grab-value [input] (Integer/valueOf (.getText input)))
+
 (defn- as-board-size [width-input height-input]
-  (letfn [(grab-value [input] (Integer/valueOf (.getText input)))]
-    {:width (grab-value width-input) :height (grab-value height-input)}))
+  {:width (grab-value width-input) :height (grab-value height-input)})
 
 (defn- show-settings-dialog [frame]
   (let [dialog (JDialog. frame (t :title/settings))
@@ -25,13 +26,14 @@
                                               [:board-size :width])))
         height-input (JTextField. (str (get-in @snake-configuration
                                                [:board-size :height])))
+        noise-input (JTextField. (str (:noise @snake-configuration)))
         strategy-input (doto (JComboBox.
                               (into-array (vals strategy-names)))
                          (.setSelectedItem
                           (get strategy-names
                                (:ai-strategy @snake-configuration))))]
     (doto dialog
-      (.setLayout (GridLayout. 3 2))
+      (.setLayout (GridLayout. 4 2))
       (.add (JLabel. (t :label/board-size)))
       (.add (doto (Box/createHorizontalBox)
               (.add (Box/createHorizontalStrut 5))
@@ -45,6 +47,10 @@
       (.add (doto (Box/createHorizontalBox)
               (.add (Box/createHorizontalStrut 5))
               (.add strategy-input)))
+      (.add (JLabel. (t :label/noise)))
+      (.add (doto (Box/createHorizontalBox)
+              (.add (Box/createHorizontalStrut 5))
+              (.add noise-input)))
       (.add (doto (Box/createHorizontalBox)
               (.add (Box/createHorizontalGlue))
               (.add (doto (JButton. "OK")
@@ -53,6 +59,7 @@
                          (actionPerformed [event]
                            (set-and-save-configuration
                             {:ai-strategy (as-strategy-key strategy-input)
+                             :noise (grab-value noise-input)
                              :board-size (as-board-size width-input height-input)})
                            (.setVisible dialog false))))))
               (.add (Box/createHorizontalGlue))))

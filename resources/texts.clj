@@ -8,7 +8,8 @@
   :date "Date"
   :cancel "Cancel"
   :label {:board-size "Board size:"
-          :ai "Game Snake type:"}
+          :ai "Game Snake type:"
+          :noise "Effect of Random"}
   :menu {:highscore "Show Highscore List"
          :new "New Game"
          :settings "Settings"}
@@ -28,7 +29,8 @@
   :date "Datum"
   :cancel "Abbrechen"
   :label {:board-size "Größe des Spielfelds:"
-          :ai "Verhalten der Schlange::"}
+          :ai "Verhalten der Schlange:"
+          :noise "Anteil Zufall"}
   :menu {:highscore "Highscore Liste anzeigen"
          :new "Neues Spiel"
          :quit "Beenden"

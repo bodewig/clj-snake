@@ -14,7 +14,8 @@
 
 (defn- load-config []
   (let [default-config {:board-size {:width 60 :height 60}
-                        :ai-strategy "short-sighted"}]
+                        :ai-strategy "short-sighted"
+                        :noise 50}]
     (if (.exists config-file)
       (with-open [r (io/reader config-file)]
         (merge default-config (json/read r :key-fn keyword)))
