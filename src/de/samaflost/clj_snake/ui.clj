@@ -10,7 +10,7 @@
         [de.samaflost.clj-snake.config-ui :refer [create-settings-menu]]
         [de.samaflost.clj-snake.highscore-ui :refer [create-highscore-menu]]
         [de.samaflost.clj-snake.level :refer [bottom-door top-door door-is-open?]]
-        [de.samaflost.clj-snake.snake :refer [change-direction]]
+        [de.samaflost.clj-snake.snake :refer [change-direction head tail]]
         [de.samaflost.clj-snake.util :refer [t]]))
 
 ;;; The Swing UI of the game
@@ -31,16 +31,39 @@
     (.fillRect (scale-x location) (scale-y location)
                pixel-per-point pixel-per-point)))
 
-(defn- paint-oval [g item]
-  (let [loc (:location item)]
+(defn- paint-half-rect [g color location half]
+  (let [width (if (#{:up :down} half) pixel-per-point (/ pixel-per-point 2))
+        height (if (#{:up :down} half) (/ pixel-per-point 2) pixel-per-point)
+        x-off (if (= :right half) (/ pixel-per-point 2) 0)
+        y-off (if (= :down half) (/ pixel-per-point 2) 0)]
     (doto g
-      (.setColor (:color item))
-      (.fillOval (scale-x loc) (scale-y loc)
-                 pixel-per-point pixel-per-point))))
+      (.setColor color)
+      (.fillRect (+ (scale-x location) x-off) (+ (scale-y location) y-off)
+                 width height))))
+
+(defn- paint-oval 
+  ([g item] (paint-oval g item (:color item)))
+  ([g item color]
+     (let [loc (:location item)]
+       (doto g
+         (.setColor color)
+         (.fillOval (scale-x loc) (scale-y loc)
+                    pixel-per-point pixel-per-point)))))
+
+(def ^:private opposite-of
+  {:up :down
+   :down :up
+   :left :right
+   :right :left})
 
 (defmethod paint :snake [g snake]
-  (doseq [pt (:body snake)]
-    (paint-rect g (:color snake) pt)))
+  (let [head (head snake)]
+    (paint-oval g head (:color snake))
+    (when-let [tail (seq (:body (tail snake)))]
+      (paint-half-rect g (:color snake) (:location head)
+                       (opposite-of (:direction snake)))
+      (doseq [pt tail]
+        (paint-rect g (:color snake) pt)))))
 
 (defmethod paint :apple [g apple]
   (paint-oval g apple))
