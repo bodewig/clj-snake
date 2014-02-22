@@ -1,7 +1,17 @@
 (ns de.samaflost.clj-snake.ai-test
   (:require [clojure.test :refer :all]
+            [de.samaflost.clj-snake.config :refer [snake-configuration]]
             [de.samaflost.clj-snake.game-test :as gt]
             [de.samaflost.clj-snake.ai :refer :all]))
+
+(defn- no-noise [config]
+  (assoc config :noise 0))
+
+(defn without-noise [test]
+  (swap! snake-configuration no-noise)
+  (test))
+
+(use-fixtures :each without-noise)
 
 (deftest random-direction-choice
   (testing "the expected three directions are present when snake has a tail"
