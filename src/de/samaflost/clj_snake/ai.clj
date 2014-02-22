@@ -82,7 +82,7 @@
           (map (partial location-of-head-if-snake-moved-to snake)
                (if (> (rand-int 100) (:noise @snake-configuration))
                  (choose-directions snake game-state)
-                 (purely-random-direction snake))))))
+                 (biased-random-direction snake))))))
 
 (defn walk
   "Moving the AI controlled snake"
