@@ -88,8 +88,8 @@
   "Moving the AI controlled snake"
   [{:keys [direction] :as snake} game-state]
   (if-let [new-direction (pick-direction snake game-state)]
-    (s/move (assoc snake :direction new-direction))
-    (assoc (s/move (assoc snake :direction :stand))
+    (dissoc (s/move (assoc snake :direction new-direction)) :stuck)
+    (assoc (s/move (assoc snake :direction :stand :stuck 1))
       :direction direction)))
 
 ;;; test support strategies only

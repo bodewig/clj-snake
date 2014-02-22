@@ -70,11 +70,17 @@
   (if (is-won? state) :won
       (when (is-lost? state) :lost)))
 
-(defn move-ai [{:keys [ai apples] :as state}]
+(defn- shrunk-to-head [snake]
+  (and (get @snake :stuck)
+       (= 1 (count (:body @snake)))))
+
+(defn move-ai [{:keys [ai apples score] :as state}]
   (alter ai walk state)
   (when-let [eaten-apple (apple-at-head @ai @apples)]
     (alter ai consume eaten-apple)
-    (alter apples remove-apple eaten-apple)))
+    (alter apples remove-apple eaten-apple))
+  (when (shrunk-to-head ai)
+    (alter score +' 5000)))
 
 (defn- move-and-eval-game [{:keys [mode player balls level ai] :as state}]
   (when (#{:eating :escaping} @mode)

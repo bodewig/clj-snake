@@ -93,6 +93,7 @@
                    [12 2] [12 3] [11 3] [10 3]
                    [9 3] [9 2] [9 1]]
             :to-grow 0
+            :stuck 1
             :strategy :clockwise}
            (walk {:body [[10 2] [11 2] [11 1] [10 1]
                          [10 0] [11 0] [12 0] [12 1]
@@ -109,6 +110,7 @@
       (is (= {:direction :left
               :body [[10 2]]
               :to-grow 0
+              :stuck 1
               :strategy :clockwise}
              (walk {:body [[10 2] [11 2]]
                     :to-grow 0
