@@ -26,6 +26,9 @@
    (shuffle (concat (acceptable-directions snake)
                     (repeat 3 direction)))))
 
+(defn- purely-random-direction [snake]
+  (shuffle (acceptable-directions snake)))
+
 (defmethod choose-directions :random [snake _]
   (biased-random-direction snake))
 
@@ -49,7 +52,7 @@
   [snake {:keys [apples]}]
   (if-let [apple (closest (s/head snake) @apples)]
     (try-to-reach snake apple)
-    (shuffle (acceptable-directions snake))))
+    (purely-random-direction snake)))
 
 ;; tries to reach the player's snake's head
 (defmethod choose-directions :aggressive
@@ -77,7 +80,9 @@
   (let [places-taken [@level @player @balls (s/tail snake)]]
     (some #(when (u/no-collisions places-taken %) (:direction %))
           (map (partial location-of-head-if-snake-moved-to snake)
-               (choose-directions snake game-state)))))
+               (if (> (rand-int 100) (:noise @snake-configuration))
+                 (choose-directions snake game-state)
+                 (purely-random-direction snake))))))
 
 (defn walk
   "Moving the AI controlled snake"
