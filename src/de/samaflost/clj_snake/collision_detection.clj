@@ -3,8 +3,8 @@
              :refer [bottom-door door-is-open? top-door]]))
 
 ;;; General purpose collision detection used for detecting whether the
-;;; snake hist a wall, itself, the other snake or the ball, the ball
-;;; hist a wall, an apple is generated on top of a snake and so on
+;;; snake hits a wall, itself, the other snake or the ball, the ball
+;;; hits a wall, an apple is generated on top of a snake and so on
 
 (defn- location-in-collection? [location collection]
   (contains? (set collection) location))
