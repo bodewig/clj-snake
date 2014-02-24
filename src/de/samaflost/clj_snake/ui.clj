@@ -57,9 +57,10 @@
    :right :left})
 
 (defmethod paint :snake [g snake]
-  (let [head (head snake)]
+  (let [body (:body snake)
+        head {:location (first body)}]
     (paint-oval g head (:color snake))
-    (when-let [tail (seq (:body (tail snake)))]
+    (when-let [tail (rest body)]
       (paint-half-rect g (:color snake) (:location head)
                        (opposite-of (:direction snake)))
       (doseq [pt tail]
@@ -158,7 +159,7 @@
 (defn- create-repaint-timer [start-over
                              frame game-panel score-label escape-panel
                              mode score]
-  (Timer. (/ ms-per-turn 2)
+  (Timer. (/ ms-per-turn 8)
           (proxy [ActionListener] []
             (actionPerformed [event]
               (repaint game-panel score-label escape-panel score)))))
