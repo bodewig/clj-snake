@@ -129,21 +129,21 @@
         stretch (* 3 pixel-per-point)
         stroke (* 2 pixel-per-point)
         offset (/ pixel-per-point 2)
+        paint-head (fn [g x]
+                      (doto g
+                        (.fillOval x offset stroke stroke)
+                        (.fillRect x (+ offset pixel-per-point) stroke stroke)))
         max-lifes (/ width stretch)]
   (proxy [JPanel] []
     (getPreferredSize []
       (Dimension. width (* 2 stroke)))
     (paintComponent [g]
       (proxy-super paintComponent g)
-      (let [heads (min max-lifes @lifes-left)]
-        (.setColor g Color/GREEN)
-        (loop [todo heads]
-          (when (pos? todo)
-            (let [x (+ offset (* stretch (dec todo)))]
-              (doto g
-                (.fillOval x offset stroke stroke)
-                (.fillRect x (+ offset pixel-per-point) stroke stroke)))
-            (recur (dec todo)))))))))
+      (.setColor g Color/GREEN)
+      (loop [todo (min max-lifes @lifes-left)]
+        (when (pos? todo)
+          (paint-head g (+ offset (* stretch (dec todo))))
+          (recur (dec todo))))))))
 
 (def key-code-to-direction
   ^{:private true}
