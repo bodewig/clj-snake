@@ -127,8 +127,9 @@
 (defn- create-lifes-indicator [lifes-left]
   (let [width (/ (* (get-in @snake-configuration [:board-size :width]) pixel-per-point) 2)
         stretch (* 3 pixel-per-point)
-        max-lifes (/ width stretch)
-        stroke (* 2 pixel-per-point)]
+        stroke (* 2 pixel-per-point)
+        offset (/ pixel-per-point 2)
+        max-lifes (/ width stretch)]
   (proxy [JPanel] []
     (getPreferredSize []
       (Dimension. width (* 2 stroke)))
@@ -138,10 +139,10 @@
         (.setColor g Color/GREEN)
         (loop [todo heads]
           (when (pos? todo)
-            (let [x (* stretch (dec todo))]
+            (let [x (+ offset (* stretch (dec todo)))]
               (doto g
-                (.fillOval x 0 stroke stroke)
-                (.fillRect x pixel-per-point stroke stroke)))
+                (.fillOval x offset stroke stroke)
+                (.fillRect x (+ offset pixel-per-point) stroke stroke)))
             (recur (dec todo)))))))))
 
 (def key-code-to-direction
