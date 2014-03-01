@@ -124,6 +124,26 @@
                    :else Color/RED))
             (.fillRect 0 0 (* width fraction-left) height))))))))
 
+(defn- create-lifes-indicator [lifes-left]
+  (let [width (/ (* (get-in @snake-configuration [:board-size :width]) pixel-per-point) 2)
+        stretch (* 3 pixel-per-point)
+        max-lifes (/ width stretch)
+        stroke (* 2 pixel-per-point)]
+  (proxy [JPanel] []
+    (getPreferredSize []
+      (Dimension. width (* 2 stroke)))
+    (paintComponent [g]
+      (proxy-super paintComponent g)
+      (let [heads (min max-lifes @lifes-left)]
+        (.setColor g Color/GREEN)
+        (loop [todo heads]
+          (when (pos? todo)
+            (let [x (* stretch (dec todo))]
+              (doto g
+                (.fillOval x 0 stroke stroke)
+                (.fillRect x pixel-per-point stroke stroke)))
+            (recur (dec todo)))))))))
+
 (def key-code-to-direction
   ^{:private true}
   {
@@ -151,18 +171,19 @@
    (t :game-over)
    JOptionPane/INFORMATION_MESSAGE))
 
-(defn repaint [game-panel score-label escape-panel score]
+(defn repaint [game-panel score-label escape-panel lifes-indicator score]
   (.repaint game-panel)
   (.repaint escape-panel)
+  (.repaint lifes-indicator)
   (.setText score-label (str @score)))
 
 (defn- create-repaint-timer [start-over
-                             frame game-panel score-label escape-panel
+                             frame game-panel score-label escape-panel lifes-indicator
                              mode score]
   (Timer. (/ ms-per-turn 8)
           (proxy [ActionListener] []
             (actionPerformed [event]
-              (repaint game-panel score-label escape-panel score)))))
+              (repaint game-panel score-label escape-panel lifes-indicator score)))))
 
 (defn- create-menu-bar [frame start-over]
   (doto (JMenuBar.)
@@ -187,7 +208,7 @@
                        (actionPerformed [event] (System/exit 0))))))))))
                     
 
-(defn create-ui [{:keys [level ai player apples score mode
+(defn create-ui [{:keys [level ai player apples score mode lifes-left
                          time-left-to-escape balls count-down]}
                  start-over]
   (let [frame (JFrame. "clj-snake")
@@ -195,9 +216,11 @@
                      (.setFocusable true)
                      (.addKeyListener (create-cursor-listener player)))
         score-label (JLabel. "0")
+        lifes-indicator (create-lifes-indicator lifes-left)
         escape-panel (create-escape-panel time-left-to-escape)
         repaint-timer (create-repaint-timer start-over
-                                            frame game-panel score-label escape-panel 
+                                            frame game-panel score-label
+                                            escape-panel lifes-indicator 
                                             mode score)]
     (let [f (.getFont score-label)]
       (.setFont score-label
@@ -207,6 +230,7 @@
     (doto frame
       (.add game-panel BorderLayout/CENTER)
       (.add (doto (JPanel. (BorderLayout.))
+              (.add lifes-indicator BorderLayout/WEST)
               (.add score-label BorderLayout/EAST)
               (.add escape-panel BorderLayout/SOUTH))
             BorderLayout/NORTH)
