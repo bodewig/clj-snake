@@ -8,6 +8,7 @@
 (def pixel-per-point 10)
 (def number-of-apples 5)
 (def ms-to-escape 12000)
+(def initial-lifes 1)
 
 (def config-file
   (io/file (.. System (getProperties) (get "user.home")) ".clj-snake" "config.json"))

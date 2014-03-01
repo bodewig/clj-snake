@@ -8,11 +8,12 @@
 (defn base-state []
   {:player (ref {:body [[4 4] [4 5] [4 6]] :direction :left :to-grow 1})
    :ai (ref {:body [[9 2] [9 1]] :direction :right :to-grow 0 :strategy :stubborn})
-   :level (ref {:walls [[1 1]] :type :level :top-door :closed :number 0})
+   :level (ref {:walls [[1 1]] :type :level :top-door :closed :number 0 :balls 1})
    :apples (ref [{:location [7 7] :remaining-nutrition 100}])
    :balls (ref [{:location [8 8]}])
    :time-left-to-escape (ref 1000)
    :score (ref 0)
+   :lifes-left (ref 0)
    :count-down (ref 1000)
    :mode (ref :eating)})
 
@@ -103,7 +104,13 @@
     (is (= :lost (eval-won-or-lost (assoc (base-state)
                                     :mode (ref :escaping)
                                     :level (ref {:top-door :closed :type :level})
-                                    :player (ref {:body [top-door]})))))))
+                                    :player (ref {:body [top-door]}))))))
+  (testing "restarts if there are lifes left"
+    (is (= :re-starting (eval-won-or-lost (assoc (base-state)
+                                            :lifes-left (ref 1)
+                                            :level (ref {:walls [[4 4]]
+                                                         :type :level
+                                                         :top-door :closed})))))))
 
 (defn starting-and-return [s]
   (dosync (starting-actions s))
@@ -140,3 +147,18 @@
   (testing "it moves"
     (is (= {:body [[10 2] [9 2]] :direction :right :to-grow 0 :strategy :stubborn}
            (deref (:ai (move-ai-and-return (base-state))))))))
+
+(defn re-starting-and-return [s]
+  (dosync (re-starting-actions s))
+  s)
+
+(deftest turn-in-re-starting-mode
+  (testing "steals life and re-starts current level"
+    (is (= 1 (deref (:lifes-left (re-starting-and-return
+                                    (assoc (base-state)
+                                      :lifes-left (ref 2)
+                                      :mode (ref :re-starting)))))))
+    (is (= :starting (deref (:mode (re-starting-and-return
+                                    (assoc (base-state)
+                                      :lifes-left (ref 2)
+                                      :mode (ref :re-starting)))))))))

@@ -43,7 +43,8 @@
                :time-left-to-escape (ref 0)
                :score (ref 0)
                :count-down (ref 0)
-               :mode (ref :starting)}]
+               :mode (ref :starting)
+               :lifes-left (ref initial-lifes)}]
     (assoc (state-for-new-level state (create-initial-level))
       :mode (ref :initial))))
 
@@ -66,9 +67,10 @@
 (defn eval-won-or-lost
   "Returns :won or :lost when appropriate or nil if neither is true
    right now"
-  [state]
+  [{:keys [lifes-left] :as state}]
   (if (is-won? state) :won
-      (when (is-lost? state) :lost)))
+      (when (is-lost? state)
+        (if (pos? @lifes-left) :re-starting :lost))))
 
 (defn- shrunk-to-head [snake]
   (and (get @snake :stuck)
@@ -144,6 +146,14 @@
   (when (neg? (alter count-down - ms-per-turn))
     (ref-set mode :eating)))
 
+(defn re-starting-actions
+  "stuff done when the user has been killed but lifes left.
+   Must be called from within a transaction."
+  [{:keys [level lifes-left] :as state}]
+  (alter lifes-left dec)
+  (state-for-new-level state @level)
+  (schedule-closing-doors state))
+
 (defn lost-actions
   "stuff done when the game is lost.
    Not to be called from within a transaction."
@@ -161,16 +171,18 @@
      :eating (eating-only-turn-actions state)
      :escaping (escaping-only-turn-actions state)
      :won (won-actions state)
+     :re-starting (re-starting-actions state)
      :starting (starting-actions state)
      :leaving (leaving-actions state)
      nil))
   ;; outside of the dosync as lost-callback may be blocking
   (when (= @mode :lost) (lost-actions state lost-callback)))
 
-(defn- start-over [{:keys [score] :as state}]
+(defn- start-over [{:keys [score lifes-left] :as state}]
   (dosync
    (state-for-new-level state (create-initial-level))
-   (ref-set score 0))
+   (ref-set score 0)
+   (ref-set lifes-left initial-lifes))
   (schedule-closing-doors state))
 
 (defn- create-board []
