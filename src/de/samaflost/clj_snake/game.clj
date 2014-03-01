@@ -44,7 +44,7 @@
                :score (ref 0)
                :count-down (ref 0)
                :mode (ref :starting)
-               :lifes-left (ref initial-lifes)}]
+               :lifes-left (ref initial-extra-lifes)}]
     (assoc (state-for-new-level state (create-initial-level))
       :mode (ref :initial))))
 
@@ -182,7 +182,7 @@
   (dosync
    (state-for-new-level state (create-initial-level))
    (ref-set score 0)
-   (ref-set lifes-left initial-lifes))
+   (ref-set lifes-left initial-extra-lifes))
   (schedule-closing-doors state))
 
 (defn- create-board []
