@@ -9,6 +9,7 @@
 (def number-of-apples 5)
 (def ms-to-escape 12000)
 (def initial-extra-lifes 1)
+(def grant-extra-life-at 12500)
 
 (def config-file
   (io/file (.. System (getProperties) (get "user.home")) ".clj-snake" "config.json"))

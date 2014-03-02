@@ -14,6 +14,7 @@
    :time-left-to-escape (ref 1000)
    :score (ref 0)
    :lifes-left (ref 0)
+   :next-extra-life-at (ref grant-extra-life-at)
    :count-down (ref 1000)
    :mode (ref :eating)})
 
@@ -80,7 +81,14 @@
 (deftest turn-in-won-mode
   (testing "is awarded time left"
     (is (= 1000 (deref (:score (won-and-return (base-state))))))
-    (is (= :leaving (deref (:mode (won-and-return (base-state))))))))
+    (is (= :leaving (deref (:mode (won-and-return (base-state)))))))
+  (testing "may award an additional live"
+    (letfn [(winning-state [] (assoc (base-state)
+                                :time-left-to-escape (ref grant-extra-life-at)
+                                :score (ref 1)))]
+      (is (= 1 (deref (:lifes-left (won-and-return (winning-state))))))
+      (is (= (* 2 grant-extra-life-at)
+             (deref (:next-extra-life-at (won-and-return (winning-state)))))))))
 
 (deftest won-or-lost
   (testing "properly evaluates won-lost states"

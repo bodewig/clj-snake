@@ -44,7 +44,8 @@
                :score (ref 0)
                :count-down (ref 0)
                :mode (ref :starting)
-               :lifes-left (ref initial-extra-lifes)}]
+               :lifes-left (ref initial-extra-lifes)
+               :next-extra-life-at (ref grant-extra-life-at)}]
     (assoc (state-for-new-level state (create-initial-level))
       :mode (ref :initial))))
 
@@ -76,8 +77,10 @@
   (and (get @snake :stuck)
        (= 1 (count (:body @snake)))))
 
-(defn- add-to-score [{:keys [score]} add]
-  (alter score +' add))
+(defn- add-to-score [{:keys [score next-extra-life-at lifes-left]} to-add]
+  (when (> (alter score +' to-add) @next-extra-life-at)
+    (alter next-extra-life-at +' grant-extra-life-at)
+    (alter lifes-left inc)))
 
 (defn move-ai [{:keys [ai apples score] :as state}]
   (alter ai walk state)
