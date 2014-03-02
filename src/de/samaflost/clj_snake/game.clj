@@ -76,13 +76,16 @@
   (and (get @snake :stuck)
        (= 1 (count (:body @snake)))))
 
+(defn- add-to-score [{:keys [score]} add]
+  (alter score +' add))
+
 (defn move-ai [{:keys [ai apples score] :as state}]
   (alter ai walk state)
   (when-let [eaten-apple (apple-at-head @ai @apples)]
     (alter ai consume eaten-apple)
     (alter apples remove-apple eaten-apple))
   (when (shrunk-to-head ai)
-    (alter score +' 5000)))
+    (add-to-score state 5000)))
 
 (defn- move-and-eval-game [{:keys [mode player balls level ai] :as state}]
   (when (#{:eating :escaping} @mode)
@@ -92,9 +95,9 @@
     (when-let [new-state (eval-won-or-lost state)]
       (ref-set mode new-state))))
 
-(defn- eat [player apple score]
+(defn- eat [apple {:keys [player] :as state}]
   (alter player consume apple)
-  (alter score +' (:remaining-nutrition apple)))
+  (add-to-score state (:remaining-nutrition apple)))
 
 (defn- enter-escaping-mode [level mode]
   (ref-set mode :escaping)
@@ -103,10 +106,10 @@
 (defn eating-only-turn-actions
   "stuff done in a turn that starts by the player trying to eat apples.
    Must be called from within a transaction."
-  [{:keys [player apples level score mode]}]
+  [{:keys [player apples level mode] :as state}]
   (alter apples age [@level @player])
   (when-let [eaten-apple (apple-at-head @player @apples)]
-    (eat player eaten-apple score)
+    (eat eaten-apple state)
     (when-not (seq (alter apples remove-apple eaten-apple))
       (enter-escaping-mode level mode))))
 
@@ -135,7 +138,7 @@
   "stuff done in a turn if the player has escaped the level.
    Must be called from within a transaction."
   [{:keys [score time-left-to-escape mode] :as state}]
-  (alter score +' @time-left-to-escape)
+  (add-to-score state @time-left-to-escape)
   (ref-set mode :leaving)
   (leaving-actions state))
 
