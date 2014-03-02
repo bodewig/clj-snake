@@ -184,11 +184,14 @@
   ;; outside of the dosync as lost-callback may be blocking
   (when (= @mode :lost) (lost-actions state lost-callback)))
 
-(defn- start-over [{:keys [score lifes-left] :as state}]
+(defn start-over
+  "Re-sets the game to the initial state"
+  [{:keys [score lifes-left next-extra-life-at] :as state}]
   (dosync
    (state-for-new-level state (create-initial-level))
    (ref-set score 0)
-   (ref-set lifes-left initial-extra-lifes))
+   (ref-set lifes-left initial-extra-lifes)
+   (ref-set next-extra-life-at grant-extra-life-at))
   (schedule-closing-doors state))
 
 (defn- create-board []

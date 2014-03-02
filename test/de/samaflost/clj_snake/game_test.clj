@@ -3,7 +3,7 @@
   (:require [clojure.test :refer :all]
             [de.samaflost.clj-snake.config :refer :all]
             [de.samaflost.clj-snake.game :refer :all]
-            [de.samaflost.clj-snake.level :refer [top-door]]))
+            [de.samaflost.clj-snake.level :refer [bottom-door door-is-open? top-door]]))
 
 (defn base-state []
   {:player (ref {:body [[4 4] [4 5] [4 6]] :direction :left :to-grow 1})
@@ -14,7 +14,7 @@
    :time-left-to-escape (ref 1000)
    :score (ref 0)
    :lifes-left (ref 0)
-   :next-extra-life-at (ref grant-extra-life-at)
+   :next-extra-life-at (ref 10000)
    :count-down (ref 1000)
    :mode (ref :eating)})
 
@@ -87,7 +87,7 @@
                                 :time-left-to-escape (ref grant-extra-life-at)
                                 :score (ref 1)))]
       (is (= 1 (deref (:lifes-left (won-and-return (winning-state))))))
-      (is (= (* 2 grant-extra-life-at)
+      (is (= (+ 10000 grant-extra-life-at)
              (deref (:next-extra-life-at (won-and-return (winning-state)))))))))
 
 (deftest won-or-lost
@@ -170,3 +170,21 @@
                                     (assoc (base-state)
                                       :lifes-left (ref 2)
                                       :mode (ref :re-starting)))))))))
+(defn start-over-and-return [s]
+  (start-over s)
+  s)
+
+(deftest start-over-results
+  (testing "start-over really resets all relevant properties"
+    (is (= 1 (count (:body (deref (:player (start-over-and-return (base-state))))))))
+    (is (= 1 (count (:body (deref (:player (start-over-and-return (base-state))))))))
+    (is (= number-of-apples (count
+                             (deref (:apples (start-over-and-return (base-state)))))))
+    (is (= 1 (count (deref (:balls (start-over-and-return (base-state)))))))
+    (is (= ms-to-escape 
+           (deref (:time-left-to-escape (start-over-and-return (base-state))))))
+    (is (= :starting (deref (:mode (start-over-and-return (base-state))))))
+    (is (= 3000 (deref (:count-down (start-over-and-return (base-state))))))
+    (is (= 1 (deref (:lifes-left (start-over-and-return (base-state))))))
+    (is (= grant-extra-life-at
+           (deref (:next-extra-life-at (start-over-and-return (base-state))))))))
