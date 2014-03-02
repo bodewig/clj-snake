@@ -84,27 +84,56 @@
       (is (= 41 (:to-grow (move (assoc (new-snake true)
                                   :to-grow 42)))))))
 
+(def base-snake {:body [[1 1]], :direction :up})
+
 (deftest changing-direction
   (testing "changing from :up"
-    (is (= :up (:direction (change-direction {:direction :up} :up))))
-    (is (= :left (:direction (change-direction {:direction :up} :left))))
-    (is (= :up (:direction (change-direction {:direction :up} :down))))
-    (is (= :right (:direction (change-direction {:direction :up} :right)))))
+    (is (= :up (:direction (change-direction base-snake :up))))
+    (is (= :left (:direction (change-direction base-snake :left))))
+    (is (= :up (:direction (change-direction base-snake :down))))
+    (is (= :right (:direction (change-direction base-snake :right)))))
   (testing "changing from :left"
-    (is (= :up (:direction (change-direction {:direction :left} :up))))
-    (is (= :left (:direction (change-direction {:direction :left} :left))))
-    (is (= :down (:direction (change-direction {:direction :left} :down))))
-    (is (= :left (:direction (change-direction {:direction :left} :right)))))
+    (is (= :up (:direction (change-direction (assoc base-snake :direction :left)
+                                             :up))))
+    (is (= :left (:direction (change-direction (assoc base-snake :direction :left)
+                                               :left))))
+    (is (= :down (:direction (change-direction (assoc base-snake :direction :left)
+                                               :down))))
+    (is (= :left (:direction (change-direction (assoc base-snake :direction :left)
+                                               :right)))))
   (testing "changing from :down"
-    (is (= :down (:direction (change-direction {:direction :down} :up))))
-    (is (= :left (:direction (change-direction {:direction :down} :left))))
-    (is (= :down (:direction (change-direction {:direction :down} :down))))
-    (is (= :right (:direction (change-direction {:direction :down} :right)))))
+    (is (= :down (:direction (change-direction (assoc base-snake :direction :down)
+                                               :up))))
+    (is (= :left (:direction (change-direction (assoc base-snake :direction :down)
+                                               :left))))
+    (is (= :down (:direction (change-direction (assoc base-snake :direction :down)
+                                               :down))))
+    (is (= :right (:direction (change-direction (assoc base-snake :direction :down)
+                                                :right)))))
   (testing "changing from :right"
-    (is (= :up (:direction (change-direction {:direction :right} :up))))
-    (is (= :right (:direction (change-direction {:direction :right} :left))))
-    (is (= :down (:direction (change-direction {:direction :right} :down))))
-    (is (= :right (:direction (change-direction {:direction :right} :right))))))
+    (is (= :up (:direction (change-direction (assoc base-snake :direction :right)
+                                             :up))))
+    (is (= :right (:direction (change-direction (assoc base-snake :direction :right)
+                                                :left))))
+    (is (= :down (:direction (change-direction (assoc base-snake :direction :right)
+                                               :down))))
+    (is (= :right (:direction (change-direction (assoc base-snake :direction :right)
+                                                :right)))))
+  (testing "doesn't change direction before leaving the door"
+    (is (= :up (:direction
+                (change-direction
+                 (assoc base-snake
+                   :body (list [half-width
+                                (dec
+                                 (get-in @snake-configuration [:board-size :height]))]))
+                 :left))))
+    (is (= :up (:direction
+                (change-direction
+                 (assoc base-snake
+                   :body (list [half-width
+                                (dec
+                                 (get-in @snake-configuration [:board-size :height]))]))
+                 :right))))))
 
 (deftest consuming-apples
   (testing "consume"

@@ -41,7 +41,8 @@
    perpendicular to current direction, otherwise the current direction
    is kept"
   [snake new-dir]
-  (if (is-perpendicular? (:direction snake) new-dir)
+  (if (and (not= bottom-door (first (:body snake)))
+           (is-perpendicular? (:direction snake) new-dir))
     (assoc snake :direction new-dir)
     snake))
 
