@@ -38,12 +38,5 @@
 (def ^:private tower-config
   {:dev-mode false, :fallback-locale :en :dictionary "texts.clj"})
 
-(def ^:private locale-key
-  ;; work-around for tower issue 37 which is supposed to be fixed in 2.0.2
-  ;; remove once 2.0.2 is available in clojars
-
-  ;; use the fact there are only translations for two-letter codes in this game
-  (keyword (subs (name (tower/locale-key :jvm-default)) 0 2)))
-
 (def ^{:doc "wrapper around tower's t that uses the current JVM locale"}
-  t (partial tower/t locale-key tower-config))
+  t (partial tower/t :jvm-default tower-config))
