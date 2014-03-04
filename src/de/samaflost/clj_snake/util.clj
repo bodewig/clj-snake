@@ -20,15 +20,16 @@
 (defn randomly-located-thing
   "Returns a map with a random :location inside the bounds of the level"
   []
-  {:location [(inc (rand-int (- (get-in @snake-configuration [:board-size :width]) 2)))
-              (inc (rand-int
-                    (- (get-in @snake-configuration [:board-size :height]) 2)))]})
+  (letfn [(rand-inside [dimension]
+            (-> (get-in @snake-configuration [:board-size dimension])
+                (- 2) (rand-int) (inc)))]
+    {:location [(rand-inside :width) (rand-inside :height)]}))
 
 (defn next-location
   "Returns location of moving from one location into a given direction
    either of which is given as a vector."
   [location direction]
-  (vec (apply map + [location direction])))
+  (vec (map + location direction)))
 
 (defn no-collisions
   "Returns item if item doesn't collide with places-taken or nil."
