@@ -10,7 +10,7 @@
    :ai (ref {:body [[9 2] [9 1]] :direction :right :to-grow 0 :strategy :stubborn})
    :level (ref {:walls [[1 1]] :type :level :top-door :closed :number 0 :balls 1})
    :apples (ref [{:location [7 7] :remaining-nutrition 100}])
-   :balls (ref [{:location [8 8]}])
+   :balls (ref [{:location [8 8] :direction 1}])
    :time-left-to-escape (ref 1000)
    :score (ref 0)
    :lifes-left (ref 0)
@@ -142,10 +142,13 @@
   s)
 
 (deftest turn-in-leaving-mode
-  (testing "is awarded time left"
-    (is (= [[4 4]] (:body (deref (:player (leaving-and-return (base-state)))))))
+  (testing "shrinks and may restart"
+    (is (= [[4 4]  [4 5]] (:body (deref (:player (leaving-and-return
+                                                  (assoc (base-state)
+                                                    :mode (ref :leaving))))))))
     (is (= :starting (deref (:mode (leaving-and-return
                                     (assoc (base-state)
+                                      :mode (ref :leaving)
                                       :player (ref {:body []})))))))))
 (defn move-ai-and-return [s]
   (dosync (move-ai s))

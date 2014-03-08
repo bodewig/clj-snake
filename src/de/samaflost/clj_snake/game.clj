@@ -91,10 +91,10 @@
     (add-to-score state 5000)))
 
 (defn- move-and-eval-game [{:keys [mode player balls level ai] :as state}]
-  (when (#{:eating :escaping} @mode)
+  (when (#{:eating :escaping :leaving} @mode)
     (move-ai state)
     (alter balls bounce-all [@player @level @ai])
-    (alter player move)
+    (alter player (if (= :leaving @mode) fake-leaving move))
     (when-let [new-state (eval-won-or-lost state)]
       (ref-set mode new-state))))
 
@@ -132,8 +132,9 @@
 (defn leaving-actions
   "Make it look as if the snake was leaving through the top door.
    Must be called from within a transaction."
-  [{:keys [player mode level] :as state}]
-  (when-not (seq (:body (alter player fake-leaving)))
+  [{:keys [player level] :as state}]
+  (move-and-eval-game state)
+  (when-not (seq (:body @player))
     (state-for-new-level state (next-level @level))
     (schedule-closing-doors state)))
 
