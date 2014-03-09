@@ -87,6 +87,17 @@
                    (concat
                     (map #(array-map :location [% 0]) (range 0 3))
                     (map #(array-map :location [2 %]) (range 0 3)))))))
+  (testing "bouncing with diagonal"
+    (let [downward [{:location [5 5]} {:location [6 6]}]
+          upward [{:location [5 5]} {:location [6 4]}]]
+      (is (= {:location [4 3] :direction 2}
+             (bounce {:location [5 4] :direction 0} upward)))
+      (is (= {:location [7 4] :direction 3}
+             (bounce {:location [6 5] :direction 1} downward)))
+      (is (= {:location [7 6] :direction 0}
+             (bounce {:location [6 5] :direction 2} upward)))
+      (is (= {:location [4 7] :direction 1}
+             (bounce {:location [5 6] :direction 3} downward)))))
   (testing "stuck"
     (let [wall (concat
                 (map #(array-map :location [% 2]) (range 0 3))
