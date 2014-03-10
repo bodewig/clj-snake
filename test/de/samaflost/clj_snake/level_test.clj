@@ -83,3 +83,39 @@
     (is (= :closed (:top-door
                     (open-close {:top-door :closed} top-door :closed))))))
 
+(deftest open-close-all-doors-test
+  (testing "bottom-door"
+    (is (= :open (:bottom-door
+                  (open-close-all-doors {:bottom-door :closed :top-door :closed} :open))))
+    (is (= :closed (:bottom-door
+                    (open-close-all-doors {:bottom-door :closed :top-door :closed} :closed))))
+    (is (= :open (:bottom-door
+                  (open-close-all-doors {:bottom-door :open :top-door :closed} :open))))
+    (is (= :closed (:bottom-door
+                    (open-close-all-doors {:bottom-door :open :top-door :closed} :closed))))
+    (is (= :open (:bottom-door
+                  (open-close-all-doors {:bottom-door :closed :top-door :open} :open))))
+    (is (= :closed (:bottom-door
+                    (open-close-all-doors {:bottom-door :closed :top-door :open} :closed))))
+    (is (= :open (:bottom-door
+                  (open-close-all-doors {:bottom-open :closed :top-door :open} :open))))
+    (is (= :closed (:bottom-door
+                    (open-close-all-doors {:bottom-open :closed :top-door :open} :closed)))))
+  (testing "top-door"
+    (is (= :open (:top-door
+                  (open-close-all-doors {:bottom-door :closed :top-door :closed} :open))))
+    (is (= :closed (:top-door
+                    (open-close-all-doors {:bottom-door :closed :top-door :closed} :closed))))
+    (is (= :open (:top-door
+                  (open-close-all-doors {:bottom-door :open :top-door :closed} :open))))
+    (is (= :closed (:top-door
+                    (open-close-all-doors {:bottom-door :open :top-door :closed} :closed))))
+    (is (= :open (:top-door
+                  (open-close-all-doors {:bottom-door :closed :top-door :open} :open))))
+    (is (= :closed (:top-door
+                    (open-close-all-doors {:bottom-door :closed :top-door :open} :closed))))
+    (is (= :open (:top-door
+                  (open-close-all-doors {:bottom-open :closed :top-door :open} :open))))
+    (is (= :closed (:top-door
+                    (open-close-all-doors {:bottom-open :closed :top-door :open} :closed))))))
+

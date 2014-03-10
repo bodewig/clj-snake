@@ -48,6 +48,15 @@
   [level door]
   (= :open ((key-for-door door) level)))
 
+(defn open-close-all-doors
+  "open or closes both doors simultaniously"
+  [level new-state]
+  (loop [changed level remaining [top-door bottom-door]]
+    (if (seq remaining)
+      (recur (assoc changed (key-for-door (first remaining)) new-state)
+             (rest remaining))
+      changed)))
+
 (defn open-close
   "opens or closes a door"
   [level door new-state]

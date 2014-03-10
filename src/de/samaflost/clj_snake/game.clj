@@ -13,8 +13,7 @@
 (defn- schedule-closing-doors [{:keys [level player count-down]}]
   (letfn [(close-doors []
             (dosync
-             (doseq [d [top-door bottom-door]]
-               (alter level open-close d :closed))))]
+             (alter level open-close-all-doors :closed)))]
     (.schedule scheduler close-doors
                (+ (* ms-per-turn (inc (:to-grow @player))) @count-down)
                TimeUnit/MILLISECONDS)))
@@ -158,7 +157,7 @@
    Must be called from within a transaction."
   [{:keys [level lifes-left] :as state}]
   (alter lifes-left dec)
-  (state-for-new-level state @level)
+  (state-for-new-level state (alter level open-close-all-doors :open))
   (schedule-closing-doors state))
 
 (defn lost-actions
