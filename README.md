@@ -38,7 +38,7 @@ play for a while.
 
 The initial code base stands on the shoulders of the many Snake games
 published before it and is heavily influenced by Stuart Halloway's
-Snake [example Snake
+[example Snake
 program](https://github.com/stuarthalloway/programming-clojure/blob/master/src/examples/snake.clj).
 It still shares the threading approach with Stuart's game but pretty
 much everything else has been rewritten.
